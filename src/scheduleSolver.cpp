@@ -30,7 +30,8 @@ int main() {
 
     std::vector<Job> jobs = generateDummyJobs();
 
-    std::shared_ptr<SolutionHandler> solution_handler = std::make_shared<SolutionHandler>(SolutionHandler(jobs));
+    std::shared_ptr<SolutionHandler> solution_handler = std::make_shared<SolutionHandler>(jobs);
+    //auto solution_handler = new SolutionHandler(jobs);
     solution_handler->generateRandomSolution();
 
     return 0;

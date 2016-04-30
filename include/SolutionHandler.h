@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include <random>
 
 namespace jobShopSolver {
 
@@ -56,6 +57,9 @@ private:
 
     /// Member for storing best solution so far
     Solution best_solution;
+
+    /// random number generator
+    std::random_device rd;
 
 };
 
