@@ -38,9 +38,8 @@ Machine SolutionHandler::getNumberMachines(std::vector<Job> jobs) const
     return num_machines;
 }
 
-void SolutionHandler::generateRandomSolution()
+Solution SolutionHandler::generateRandomSolution()
 {
-    std::cout << "Now I am generating a random solution!" << std::endl;
     auto num_jobs = static_cast<uint32_t>(procedure.size());
     auto num_ops = procedure[0].size();
     std::vector<int> job_indices (num_jobs, 0);
@@ -74,13 +73,26 @@ void SolutionHandler::generateRandomSolution()
         ++job_indices[current_job_idx];
     }
 
-    std::cout << "Generated random schedules!" << std::endl;
-
     OpTime op_time(0);
     Solution solution {num_machines, num_jobs, schedules, op_time};
 
-    std::cout << "Now start evaluating random schedules!" << std::endl;
     evaluator->evaluateSolution(solution);
+
+    return solution;
+}
+
+void SolutionHandler::printSolution(const Solution& solution) const
+{
+    for(auto machine = 0; machine < num_machines; ++machine)
+    {
+        std::cout << "Machine " << machine << ":" << std::endl;
+        for(const auto& operation : solution.schedules.at(machine))
+        {
+            std::cout << "Job: " << operation.job_num << ", Operation: " << operation.op_num << ", OperationTime: " << operation.op_time << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
 }
 
 

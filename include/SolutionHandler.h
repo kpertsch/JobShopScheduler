@@ -22,10 +22,9 @@ public:
     SolutionHandler(std::vector<Job> jobs);
 
     /// generate random solution
-    void generateRandomSolution();
+    Solution generateRandomSolution();
 
-    /// return best solution
-    Solution getBestSolution() const {return best_solution;}
+    void printSolution(const Solution& solution) const ;
 
 private:
 
@@ -37,9 +36,6 @@ private:
 
     /// store number of machines
     Machine num_machines;
-
-    /// Member for storing best solution so far
-    Solution best_solution;
 
     /// random number generator
     std::random_device rd;

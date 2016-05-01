@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "DataStructs.h"
-#include "SolutionHandler.h"
+#include "RandomSearch.h"
 
 using namespace jobShopSolver;
 
@@ -30,10 +30,9 @@ std::vector<Job> generateDummyJobs()
 int main() {
 
     std::vector<Job> jobs = generateDummyJobs();
+    std::shared_ptr<RandomSearch> search_alg = std::make_shared<RandomSearch>(20);
 
-    std::shared_ptr<SolutionHandler> solution_handler = std::make_shared<SolutionHandler>(jobs);
-    //auto solution_handler = new SolutionHandler(jobs);
-    solution_handler->generateRandomSolution();
+    Solution solution = search_alg->findSolution(jobs);
 
     return 0;
 }
