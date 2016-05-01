@@ -27,7 +27,8 @@ private:
     /// update values of occupation vectors
     void updateOccupation(std::vector<bool>& machine_occupied, std::vector<bool>& job_occupied,
                           const OpTime& current_time, const std::vector<OpTime>& machine_times,
-                          const uint32_t& num_machines, std::vector<std::queue<Operation>>& machine_schedules) const;
+                          const uint32_t& num_machines, std::vector<std::queue<Operation>>& machine_schedules,
+                          std::vector<uint32_t>& ops_finished) const;
 
 };
 

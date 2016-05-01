@@ -22,7 +22,8 @@ namespace jobShopSolver {
 
     void Evaluator::updateOccupation(std::vector<bool>& machine_occupied, std::vector<bool>& job_occupied,
                                      const OpTime& current_time, const std::vector<OpTime>& machine_times,
-                                     const uint32_t& num_machines, std::vector<std::queue<Operation>>& machine_schedules) const
+                                     const uint32_t& num_machines, std::vector<std::queue<Operation>>& machine_schedules,
+                                     std::vector<uint32_t>& ops_finished) const
     {
         for(auto machine = 0; machine < num_machines; ++machine)
         {
@@ -31,6 +32,7 @@ namespace jobShopSolver {
                 machine_occupied[machine] = false;
                 const auto& finished_op = machine_schedules.at(machine).front();
                 job_occupied[finished_op.job_num - 1] = false;
+                ++ops_finished[finished_op.job_num - 1];
                 machine_schedules.at(machine).pop();            // delete first queue element -> job is done
             }
         }
@@ -41,6 +43,7 @@ namespace jobShopSolver {
     {
         std::vector<bool> machine_occupied (solution.num_machines, false);
         std::vector<bool> job_occupied (solution.num_jobs, false);
+        std::vector<uint32_t> ops_finished (solution.num_jobs, 0);
         std::vector<OpTime> machine_times (solution.num_machines, 0);
 
         std::vector<std::queue<Operation>> machine_schedules;
@@ -65,7 +68,8 @@ namespace jobShopSolver {
                     continue;
 
                 auto next_op = machine_schedules.at(machine).front();
-                if(!job_occupied[next_op.job_num - 1])
+                if(!job_occupied[next_op.job_num - 1] &&
+                        ops_finished.at(next_op.job_num - 1) == next_op.op_num - 1)
                 {
                     machine_times[next_op.machine - 1] = current_time + next_op.op_time;
                     machine_occupied[next_op.machine - 1] = true;
@@ -97,7 +101,7 @@ namespace jobShopSolver {
 
             // free machines who's operation is finished
             updateOccupation(machine_occupied, job_occupied, current_time,
-                             machine_times, solution.num_machines, machine_schedules);
+                             machine_times, solution.num_machines, machine_schedules, ops_finished);
         }
 
         // solution eval time = max machine time
