@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "DataStructs.h"
 #include "SolutionHandler.h"
 
 using namespace jobShopSolver;

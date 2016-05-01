@@ -5,31 +5,14 @@
 #ifndef JOBSHOPSCHEDULE_SOLUTIONHANDLER_H
 #define JOBSHOPSCHEDULE_SOLUTIONHANDLER_H
 
-#include <vector>
-#include <stdint.h>
+
 #include <random>
+#include <memory>
+
+#include "DataStructs.h"
+#include "Evaluator.h"
 
 namespace jobShopSolver {
-
-    using JobNum = uint32_t;
-    using OperationNum = uint32_t;
-    using Machine = uint32_t;
-    using OpTime = double;
-
-    struct Operation {
-        JobNum job_num;
-        OperationNum op_num;
-        Machine machine;
-        OpTime op_time;
-    };
-
-    using Job = std::vector<Operation>;
-    using MachineSchedule = std::vector<Operation>;
-
-    struct Solution {
-        std::vector<MachineSchedule> schedules;
-        OpTime total_op_time;
-    };
 
 class SolutionHandler {
 
@@ -60,6 +43,9 @@ private:
 
     /// random number generator
     std::random_device rd;
+
+    /// solution evaluator
+    std::shared_ptr<Evaluator> evaluator;
 
 };
 

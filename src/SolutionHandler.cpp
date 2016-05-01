@@ -2,11 +2,11 @@
 // Created by karl on 30.04.16.
 //
 
-#include "SolutionHandler.h"
 #include <iostream>
 #include <algorithm>
-#include <tuple>
 #include <iterator>
+
+#include "SolutionHandler.h"
 
 
 namespace jobShopSolver {
@@ -15,6 +15,7 @@ SolutionHandler::SolutionHandler(std::vector<Job> jobs)
 {
     procedure = jobs;
     num_machines = getNumberMachines(procedure);
+    evaluator = std::make_shared<Evaluator>();
 }
 
 Machine SolutionHandler::getNumberMachines(std::vector<Job> jobs) const
@@ -40,7 +41,7 @@ Machine SolutionHandler::getNumberMachines(std::vector<Job> jobs) const
 void SolutionHandler::generateRandomSolution()
 {
     std::cout << "Now I am generating a random solution!" << std::endl;
-    auto num_jobs = procedure.size();
+    auto num_jobs = static_cast<uint32_t>(procedure.size());
     auto num_ops = procedure[0].size();
     std::vector<int> job_indices (num_jobs, 0);
     std::vector<MachineSchedule> schedules (num_machines);
@@ -75,9 +76,11 @@ void SolutionHandler::generateRandomSolution()
 
     std::cout << "Generated random schedules!" << std::endl;
 
+    OpTime op_time(0);
+    Solution solution {num_machines, num_jobs, schedules, op_time};
+
     std::cout << "Now start evaluating random schedules!" << std::endl;
-
-
+    evaluator->evaluateSolution(solution);
 }
 
 
