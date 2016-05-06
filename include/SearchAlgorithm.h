@@ -14,7 +14,7 @@ class SearchAlgorithm {
 
 public:
 
-    virtual Solution findSolution(std::vector<Job>& jobs) const = 0;
+    virtual Solution findSolution(const std::vector<Job>& jobs) const = 0;
 
 protected:
 

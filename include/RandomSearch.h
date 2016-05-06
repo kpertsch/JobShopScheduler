@@ -16,10 +16,10 @@ class RandomSearch : public SearchAlgorithm {
 public:
 
     /// Constructor
-    RandomSearch(double t_limit);
+    RandomSearch(const double t_limit);
 
     /// search best solution by random tries
-    Solution findSolution(std::vector<Job>& jobs) const ;
+    Solution findSolution(const std::vector<Job>& jobs) const ;
 
 };
 

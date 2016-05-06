@@ -14,12 +14,12 @@
 
 namespace jobShopSolver {
 
-class SolutionHandler {
+class SolutionGenerator {
 
 public:
 
     /// Constructor
-    SolutionHandler(std::vector<Job> jobs);
+    SolutionGenerator(const std::vector<Job>& jobs);
 
     /// generate random solution
     Solution generateRandomSolution();
@@ -29,7 +29,7 @@ public:
 private:
 
     /// Retrieve number of machines
-    Machine getNumberMachines(std::vector<Job> jobs) const;
+    Machine getNumberMachines(std::vector<Job>& jobs) const;
 
     /// Store jobs to complete
     std::vector<Job> procedure;

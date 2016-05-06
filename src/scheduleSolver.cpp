@@ -29,10 +29,10 @@ std::vector<Job> generateDummyJobs()
 
 int main() {
 
-    std::vector<Job> jobs = generateDummyJobs();
+    const std::vector<Job> jobs = generateDummyJobs();
     std::shared_ptr<RandomSearch> search_alg = std::make_shared<RandomSearch>(20);
 
-    Solution solution = search_alg->findSolution(jobs);
+    const Solution solution = search_alg->findSolution(jobs);
 
     return 0;
 }
