@@ -5,24 +5,22 @@
 #ifndef JOBSHOPSCHEDULE_RANDOMSEARCH_H
 #define JOBSHOPSCHEDULE_RANDOMSEARCH_H
 
-#include "DataStructs.h"
 #include "SearchAlgorithm.h"
 
+namespace jss
+{
 
-namespace jobShopSolver {
-
-class RandomSearch : public SearchAlgorithm {
+class RandomSearch : public SearchAlgorithm
+{
 
 public:
-
     /// Constructor
-    RandomSearch(const double t_limit);
+    RandomSearch(const std::string& file_name, unsigned seed);
 
     /// search best solution by random tries
-    Solution findSolution(const std::vector<Job>& jobs) const ;
-
+    std::shared_ptr<Schedule> findSolutionInTime(double time_limit) const override;
+    std::shared_ptr<Schedule> findSolutionInSteps(unsigned step_limit) const override;
 };
-
 
 } // end namespace
 
