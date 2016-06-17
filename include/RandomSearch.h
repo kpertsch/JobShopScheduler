@@ -2,8 +2,7 @@
 // Created by karl on 01.05.16.
 //
 
-#ifndef JOBSHOPSCHEDULE_RANDOMSEARCH_H
-#define JOBSHOPSCHEDULE_RANDOMSEARCH_H
+#pragma once
 
 #include "SearchAlgorithm.h"
 
@@ -23,5 +22,3 @@ public:
 };
 
 } // end namespace
-
-#endif //JOBSHOPSCHEDULE_RANDOMSEARCH_H

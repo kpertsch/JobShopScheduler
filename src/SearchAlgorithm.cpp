@@ -1,27 +1,89 @@
 #include "SearchAlgorithm.h"
 
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <string>
+
 using namespace jss;
 
 SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     : m_random_engine{ seed }
 {
-    (void)file_name;
+    std::ifstream file{ file_name };
+    if (not file)
+    {
+        std::cerr << "Couldn't open file '" << file_name << "'!" << std::endl;
+        return;
+    }
 
-    // generate Dummy jobs
-    Operation op11 = { 1, 1, 1, 20 };
-    Operation op12 = { 1, 2, 2, 15 };
-    Operation op13 = { 1, 3, 1, 30 };
+    // ignore comment line
+    file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    Operation op21 = { 2, 1, 2, 10 };
-    Operation op22 = { 2, 2, 2, 45 };
-    Operation op23 = { 2, 3, 1, 5 };
+    // read the number of jobs and machine
+    unsigned job_count = 0, mach_count = 0;
+    if (not(file >> job_count >> mach_count) or job_count == 0 or mach_count == 0)
+    {
+        std::cerr << "Couldn't read the number of jobs and machines in file '" << file_name << "'!" << std::endl;
+        return;
+    }
+    // ignore newline
+    file.ignore();
 
-    Job job1{ 1 };
-    for (auto op : { op11, op12, op13 })
-        job1.addOperation(op);
-    Job job2{ 2 };
-    for (auto op : { op21, op22, op23 })
-        job2.addOperation(op);
+    // read all jobs
+    std::vector<Job> jobs;
+    unsigned op_count = 0;
+    for (unsigned job_num = 0; job_num < job_count; ++job_num)
+    {
+        std::string job_line_str;
+        std::getline(file, job_line_str);
+        if (not file)
+        {
+            std::cerr << "Couldn't read job " << job_num << " in file '" << file_name << "'!" << std::endl;
+            return;
+        }
 
-    m_jobs = { job1, job2 };
+        std::istringstream job_line{ job_line_str };
+        Job job{ job_num };
+        unsigned machine_num, op_time;
+        unsigned op_num = 0;
+        // read all operations of one job at a line
+        while (job_line >> machine_num >> op_time)
+        {
+            if (not file)
+            {
+                std::cerr << "Couldn't read operation " << op_num << " of job " << job_num << " in file '" << file_name << "'!" << std::endl;
+                return;
+            }
+            if (machine_num >= mach_count)
+            {
+                std::cerr << "Wrong machine number in Operation " << op_num << " of job " << job_num << " in file '" << file_name << "'!" << std::endl;
+                return;
+            }
+            job.addOperation(Operation{ job_num, op_num, machine_num, op_time });
+            ++op_num;
+            ++op_count;
+        }
+
+        jobs.push_back(job);
+    }
+
+    m_jobs = std::move(jobs);
+    m_machine_count = mach_count;
+    m_operation_count = op_count;
+
+#ifndef NDEBUG
+    std::cout << m_jobs.size() << " jobs and " << m_machine_count << " machines" << std::endl;
+    for (auto job : m_jobs)
+    {
+        std::cout << "job " << job.job_num() << ':' << std::endl;
+        while (not job.isDone())
+        {
+            Operation op = job.popOperation();
+            std::cout << "    o_{" << op.job_num() << ',' << op.op_num() << "} = (" << op.machine() << ',' << op.op_time() << ')' << std::endl;
+        }
+    }
+    std::cout << "with a total of " << m_operation_count << " operations" << std::endl;
+#endif
 }
