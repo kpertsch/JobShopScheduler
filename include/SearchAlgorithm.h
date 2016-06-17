@@ -27,7 +27,7 @@ public:
 
 protected:
     std::shared_ptr<SerializedSchedule> generateRandomSolution() const;
-    std::shared_ptr<std::vector<SerializedSchedule> > generateNeighbours(const SerializedSchedule& curr_pos) const;
+    std::shared_ptr<std::vector<SerializedSchedule>> generateNeighbours(const SerializedSchedule& curr_pos) const;
 
     void startTimer();
     bool isTimeLimitReached() const;
@@ -35,6 +35,8 @@ protected:
     double m_start_time;
     std::default_random_engine m_random_engine;
     std::vector<Job> m_jobs;
+
+    double m_total_num_ops;
 };
 
 } // end namespace
