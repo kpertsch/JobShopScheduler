@@ -2,7 +2,7 @@
 
 #include "SerializedSchedule.h"
 
-#include <ostream>
+#include <iostream>
 #include <queue>
 #include <vector>
 #include <memory>
@@ -28,5 +28,4 @@ private:
     unsigned m_exec_time;
 };
 
-std::ostream& operator<<(std::ostream& os, const Schedule& sched);
 }
