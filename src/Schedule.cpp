@@ -4,15 +4,44 @@
 
 namespace jss{
 
-Schedule::Schedule(std::shared_ptr<SerializedSchedule> ssched)
+Schedule::Schedule(std::shared_ptr<SerializedSchedule> ssched, const unsigned& num_machines, const unsigned& num_jobs)
 {
-    // sort operations to respective machine schedules
     for(auto op_it = ssched->begin(); op_it != ssched->end(); ++op_it)
     {
         std::cout << "Executing Job " << op_it->job_num()
-                << ", operation number " << op_it->op_num()
-                << " on machine " << op_it->machine() << std::endl;
+        << ", operation number " << op_it->op_num()
+        << " on machine " << op_it->machine() << std::endl;
     }
+
+    // initialize machine schedule vector
+    for(auto machine = 0; machine < num_machines; ++machine)
+    {
+        m_machine_schedules.push_back(std::queue<Operation>());
+    }
+
+    // initialize time track arrays
+    int machine_times[num_machines] = {0};
+    int job_times[num_jobs] = {0};
+
+    // declare end time in function scope to use in end for execution time
+    unsigned end_time = 0;
+
+    // sort operations to respective machine schedules
+    for(auto op_it = ssched->begin(); op_it != ssched->end(); ++op_it)
+    {
+        auto start_time = std::max(machine_times[op_it->machine()], job_times[op_it->job_num()]);
+
+        // set start time in operation and push to machine schedule
+        auto op = *op_it;
+        op.setStartTime(start_time);
+        m_machine_schedules.at(op_it->machine()).push(op);      // wird hier auf Originaldaten geschrieben?
+
+        // update time track arrays
+        end_time = start_time + op_it->op_time();
+        machine_times[op_it->machine()] = end_time;
+        job_times[op_it->job_num()] = end_time;
+    }
+    m_exec_time = end_time;
 }
 
 }

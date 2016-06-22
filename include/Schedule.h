@@ -14,7 +14,7 @@ class Schedule
 {
 
 public:
-    Schedule(std::shared_ptr<SerializedSchedule> ssched);
+    Schedule(std::shared_ptr<SerializedSchedule> ssched, const unsigned& num_machines, const unsigned& num_jobs);
 
     unsigned exec_time() const
     {

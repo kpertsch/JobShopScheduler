@@ -24,7 +24,7 @@ std::shared_ptr<Schedule> RandomSearch::findSolutionInTime(double time_limit)
 
     std::cout << "Successfully generated random solution!" << std::endl;
 
-    auto schedule = std::make_shared<Schedule>(serialized_schedule);
+    auto schedule = std::make_shared<Schedule>(serialized_schedule, m_machine_count, m_jobs.size());
 
     return {};
 }
