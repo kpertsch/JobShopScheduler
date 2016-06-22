@@ -21,7 +21,7 @@ class SearchAlgorithm
 public:
     SearchAlgorithm(const std::string& file_name, unsigned seed);
 
-    virtual std::shared_ptr<Schedule> findSolutionInTime(double time_limit) const = 0;
+    virtual std::shared_ptr<Schedule> findSolutionInTime(double time_limit) = 0;
     virtual std::shared_ptr<Schedule> findSolutionInSteps(unsigned step_limit) const = 0;
 
     unsigned job_count() const
@@ -40,7 +40,7 @@ public:
     }
 
 protected:
-    std::shared_ptr<SerializedSchedule> generateRandomSolution() const;
+    std::shared_ptr<SerializedSchedule> generateRandomSolution();
     std::shared_ptr<std::vector<SerializedSchedule>> generateNeighbours(const SerializedSchedule& curr_pos) const;
 
     void startTimer();

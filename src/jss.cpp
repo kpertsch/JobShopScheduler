@@ -14,5 +14,6 @@ int main()
 {
 
     std::shared_ptr<RandomSearch> search_alg = std::make_shared<RandomSearch>("test.jssp", 42);
+    search_alg->findSolutionInTime(5.5);
     return 0;
 }

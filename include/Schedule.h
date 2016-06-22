@@ -5,6 +5,7 @@
 #include <ostream>
 #include <queue>
 #include <vector>
+#include <memory>
 
 namespace jss
 {
@@ -13,7 +14,7 @@ class Schedule
 {
 
 public:
-    Schedule(const SerializedSchedule& ssched);
+    Schedule(std::shared_ptr<SerializedSchedule> ssched);
 
     unsigned exec_time() const
     {

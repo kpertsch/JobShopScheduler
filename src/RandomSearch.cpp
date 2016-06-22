@@ -16,9 +16,16 @@ RandomSearch::RandomSearch(const std::string& file_name, unsigned seed)
 {
 }
 
-std::shared_ptr<Schedule> RandomSearch::findSolutionInTime(double time_limit) const
+std::shared_ptr<Schedule> RandomSearch::findSolutionInTime(double time_limit)
 {
     (void)time_limit;
+
+    auto serialized_schedule = generateRandomSolution();
+
+    std::cout << "Successfully generated random solution!" << std::endl;
+
+    auto schedule = std::make_shared<Schedule>(serialized_schedule);
+
     return {};
 }
 std::shared_ptr<Schedule> RandomSearch::findSolutionInSteps(unsigned step_limit) const
