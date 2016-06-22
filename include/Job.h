@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Operation.h"
 
 #include <queue>
@@ -35,6 +37,11 @@ public:
     bool isDone() const
     {
         return m_operations.empty();
+    }
+
+    unsigned job_num()
+    {
+        return m_job_num;
     }
 
 private:

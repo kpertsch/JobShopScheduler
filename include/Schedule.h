@@ -1,3 +1,5 @@
+#pragma once
+
 #include "SerializedSchedule.h"
 
 #include <ostream>

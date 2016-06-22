@@ -13,10 +13,6 @@ using namespace jss;
 int main()
 {
 
-    std::shared_ptr<RandomSearch> search_alg = std::make_shared<RandomSearch>("dummy_file", 42);
-
-    std::shared_ptr<Schedule> solution = search_alg->findSolutionInSteps(10);
-    std::cout << solution << std::endl;
-
+    std::shared_ptr<RandomSearch> search_alg = std::make_shared<RandomSearch>("test.jssp", 42);
     return 0;
 }

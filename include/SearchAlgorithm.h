@@ -2,8 +2,7 @@
 // Created by karl on 01.05.16.
 //
 
-#ifndef JOBSHOPSCHEDULE_SEARCHALGORITHM_H
-#define JOBSHOPSCHEDULE_SEARCHALGORITHM_H
+#pragma once
 
 #include "Job.h"
 #include "Schedule.h"
@@ -25,6 +24,21 @@ public:
     virtual std::shared_ptr<Schedule> findSolutionInTime(double time_limit) const = 0;
     virtual std::shared_ptr<Schedule> findSolutionInSteps(unsigned step_limit) const = 0;
 
+    unsigned job_count() const
+    {
+        return m_jobs.size();
+    }
+
+    unsigned machine_count() const
+    {
+        return m_machine_count;
+    }
+
+    unsigned operation_count() const
+    {
+        return m_operation_count;
+    }
+
 protected:
     std::shared_ptr<SerializedSchedule> generateRandomSolution() const;
     std::shared_ptr<std::vector<SerializedSchedule>> generateNeighbours(const SerializedSchedule& curr_pos) const;
@@ -35,10 +49,8 @@ protected:
     double m_start_time;
     std::default_random_engine m_random_engine;
     std::vector<Job> m_jobs;
-
-    double m_total_num_ops;
+    unsigned m_machine_count = 0;
+    unsigned m_operation_count = 0;
 };
 
 } // end namespace
-
-#endif //JOBSHOPSCHEDULE_SEARCHALGORITHM_H
