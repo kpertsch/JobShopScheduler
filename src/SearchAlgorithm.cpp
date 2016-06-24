@@ -135,3 +135,15 @@ std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateRandomSolution()
 
     return ssched_ptr;
 }
+
+using namespace std::chrono;
+
+void SearchAlgorithm::startTimer()
+{
+    m_start_time = steady_clock::now();
+}
+
+bool SearchAlgorithm::isTimeLimitReached(double time_limit) const
+{
+    return duration_cast<duration<double> >(steady_clock::now() - m_start_time).count() >= time_limit;
+}

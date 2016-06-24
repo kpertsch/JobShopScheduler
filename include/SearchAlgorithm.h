@@ -8,6 +8,7 @@
 #include "Schedule.h"
 #include "SerializedSchedule.h"
 
+#include <chrono>
 #include <memory>
 #include <random>
 #include <string>
@@ -21,6 +22,7 @@ class SearchAlgorithm
 public:
     SearchAlgorithm(const std::string& file_name, unsigned seed);
 
+    // time_limit in seconds
     virtual std::shared_ptr<Schedule> findSolutionInTime(double time_limit) = 0;
     virtual std::shared_ptr<Schedule> findSolutionInSteps(unsigned step_limit) const = 0;
 
@@ -44,9 +46,9 @@ protected:
     std::shared_ptr<std::vector<SerializedSchedule> > generateNeighbours(const SerializedSchedule& curr_pos) const;
 
     void startTimer();
-    bool isTimeLimitReached() const;
+    bool isTimeLimitReached(double time_limit) const;
 
-    double m_start_time;
+    std::chrono::steady_clock::time_point m_start_time;
     std::default_random_engine m_random_engine;
     std::vector<Job> m_jobs;
     unsigned m_machine_count = 0;
