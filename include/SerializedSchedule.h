@@ -11,7 +11,7 @@ class SerializedSchedule
 {
 public:
     bool addOperation(const Operation& op);
-    void swapOperations(unsigned index1, unsigned index2);
+    bool swapOperations(unsigned index1, unsigned index2);
 
     std::vector<Operation>::iterator begin()
     {

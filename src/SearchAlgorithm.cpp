@@ -1,5 +1,6 @@
 #include "SearchAlgorithm.h"
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -86,4 +87,20 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     }
     std::cout << "with a total of " << m_operation_count << " operations" << std::endl;
 #endif
+}
+
+std::shared_ptr<std::vector<SerializedSchedule> >
+SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
+{
+    std::shared_ptr<std::vector<SerializedSchedule> > ret = std::make_shared<std::vector<SerializedSchedule> >();
+    assert(m_operation_count);
+    for (unsigned i = 0; i < m_operation_count - 1; ++i)
+    {
+        SerializedSchedule copy{ curr_pos };
+        if (copy.swapOperations(i, i + 1))
+        {
+            ret->push_back(copy);
+        }
+    }
+    return ret;
 }
