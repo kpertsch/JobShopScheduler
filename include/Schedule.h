@@ -2,7 +2,8 @@
 
 #include "SerializedSchedule.h"
 
-#include <ostream>
+#include <iostream>
+#include <memory>
 #include <queue>
 #include <vector>
 
@@ -13,7 +14,7 @@ class Schedule
 {
 
 public:
-    Schedule(const SerializedSchedule& ssched);
+    Schedule(std::shared_ptr<SerializedSchedule> ssched, const unsigned& num_machines, const unsigned& num_jobs);
 
     unsigned exec_time() const
     {
@@ -26,6 +27,4 @@ private:
     std::vector<std::queue<Operation> > m_machine_schedules;
     unsigned m_exec_time;
 };
-
-std::ostream& operator<<(std::ostream& os, const Schedule& sched);
 }

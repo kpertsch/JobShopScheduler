@@ -10,7 +10,11 @@ namespace jss
 class SerializedSchedule
 {
 public:
-    bool addOperation(const Operation& op);
+    bool addOperation(const Operation& op)
+    {
+        m_operations.push_back(op);
+    }
+
     bool swapOperations(unsigned index1, unsigned index2);
 
     std::vector<Operation>::iterator begin()

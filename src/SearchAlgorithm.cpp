@@ -10,8 +10,11 @@
 using namespace jss;
 
 SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
-    : m_random_engine{ seed }
+    : m_random_engine{ std::default_random_engine(seed) }
 {
+    std::cout << std::endl
+              << "*********** INPUT *************" << std::endl;
+
     std::ifstream file{ file_name };
     if (not file)
     {
@@ -103,4 +106,32 @@ SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
         }
     }
     return ret;
+}
+
+std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateRandomSolution()
+{
+    std::shared_ptr<SerializedSchedule> ssched_ptr = std::make_shared<SerializedSchedule>();
+
+    auto jobs = m_jobs; // create working copy
+
+    std::uniform_int_distribution<int> uni(0, jobs.size() - 1);
+
+    unsigned jobs_added = 0;
+    while (jobs_added < m_operation_count)
+    {
+        auto random_idx = uni(m_random_engine);
+        bool added_job = false;
+        do
+        {
+            if (!jobs.at(random_idx).isDone())
+            {
+                ssched_ptr->addOperation(jobs.at(random_idx).popOperation());
+                added_job = true;
+                ++jobs_added;
+            }
+            random_idx = (random_idx + 1) % (jobs.size());
+        } while (!added_job);
+    }
+
+    return ssched_ptr;
 }
