@@ -2,10 +2,11 @@
 // Created by karl on 30.04.16.
 //
 
+#include <chrono>
 #include <iostream>
-#include <memory>
 #include <string>
 
+#include "IteratedHillClimber.h"
 #include "Job.h"
 #include "RandomSearch.h"
 
@@ -13,21 +14,24 @@ using namespace jss;
 
 int main(int argc, char** argv)
 {
-    unsigned seed = 42;
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::string file{ "instances/test.jssp" };
     if (argc == 2)
     {
-        seed = static_cast<unsigned>(std::stoi(std::string(argv[1])));
+        file = argv[1];
     }
-    std::shared_ptr<RandomSearch> search_alg = std::make_shared<RandomSearch>("test.jssp", seed);
 
-    std::cout << std::endl;
-
-    if (search_alg->operation_count() < 2)
-    {
+    std::cout << "    -----> IteratedHillClimber:" << std::endl;
+    IteratedHillClimber ihc{ file, seed };
+    if (ihc.operation_count() < 2)
         return -1;
-    }
+    std::cout << *ihc.findSolutionInTime(5) << std::endl;
 
-    search_alg->findSolutionInTime(5.5);
+    std::cout << "    -----> RandomSearch:" << std::endl;
+    RandomSearch rs{ file, seed };
+    if (rs.operation_count() < 2)
+        return -1;
+    std::cout << *rs.findSolutionInTime(5) << std::endl;
 
     return 0;
 }

@@ -16,25 +16,24 @@ Schedule::Schedule(std::shared_ptr<SerializedSchedule> ssched, const unsigned& n
 
     // initialize time track arrays
     std::vector<int> machine_times = std::vector<int>(num_machines, 0);
-    std::vector<int> job_times = std::vector<int>(num_machines, 0);
+    std::vector<int> job_times = std::vector<int>(num_jobs, 0);
 
     // declare end time in function scope to use in end for execution time
     unsigned end_time = 0;
 
     // sort operations to respective machine schedules
-    for (auto op_it = ssched->begin(); op_it != ssched->end(); ++op_it)
+    for (auto& op : *ssched)
     {
-        auto start_time = std::max(machine_times[op_it->machine()], job_times[op_it->job_num()]);
+        auto start_time = std::max(machine_times[op.machine()], job_times[op.job_num()]);
 
         // set start time in operation and push to machine schedule
-        auto op = *op_it;
         op.setStartTime(start_time);
-        m_machine_schedules.at(op_it->machine()).push(op); // wird hier auf Originaldaten geschrieben?
+        m_machine_schedules.at(op.machine()).push(op); // wird hier auf Originaldaten geschrieben?
 
         // update time track arrays
-        end_time = start_time + op_it->op_time();
-        machine_times[op_it->machine()] = end_time;
-        job_times[op_it->job_num()] = end_time;
+        end_time = start_time + op.op_time();
+        machine_times[op.machine()] = end_time;
+        job_times[op.job_num()] = end_time;
     }
     m_exec_time = end_time;
 }

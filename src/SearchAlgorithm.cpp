@@ -15,6 +15,10 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     std::cout << std::endl
               << "*********** INPUT *************" << std::endl;
 
+    std::cout << "File: " << file_name << std::endl
+              << "Seed: " << seed << std::endl
+              << std::endl;
+
     std::ifstream file{ file_name };
     if (not file)
     {
@@ -81,26 +85,26 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     std::cout << m_jobs.size() << " jobs and " << m_machine_count << " machines" << std::endl;
     for (auto job : m_jobs)
     {
-        std::cout << "job " << job.job_num() << ':' << std::endl;
+        std::cout << "Job " << job.job_num() << ':' << std::endl;
         while (not job.isDone())
         {
             Operation op = job.popOperation();
             std::cout << "    o_{" << op.job_num() << ',' << op.op_num() << "} = (" << op.machine() << ',' << op.op_time() << ')' << std::endl;
         }
     }
-    std::cout << "with a total of " << m_operation_count << " operations" << std::endl;
+    std::cout << "With a total of " << m_operation_count << " operations" << std::endl;
 #endif
 }
 
-std::shared_ptr<std::vector<SerializedSchedule> >
+std::shared_ptr<std::vector<std::shared_ptr<SerializedSchedule> > >
 SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
 {
-    std::shared_ptr<std::vector<SerializedSchedule> > ret = std::make_shared<std::vector<SerializedSchedule> >();
+    auto ret = std::make_shared<std::vector<std::shared_ptr<SerializedSchedule> > >();
     assert(m_operation_count);
     for (unsigned i = 0; i < m_operation_count - 1; ++i)
     {
-        SerializedSchedule copy{ curr_pos };
-        if (copy.swapOperations(i, i + 1))
+        auto copy = std::make_shared<SerializedSchedule>(curr_pos);
+        if (copy->swapOperations(i, i + 1))
         {
             ret->push_back(copy);
         }
@@ -108,7 +112,7 @@ SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
     return ret;
 }
 
-std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateRandomSolution()
+std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateRandomSolution() const
 {
     std::shared_ptr<SerializedSchedule> ssched_ptr = std::make_shared<SerializedSchedule>();
 
@@ -138,7 +142,7 @@ std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateRandomSolution()
 
 using namespace std::chrono;
 
-void SearchAlgorithm::startTimer()
+void SearchAlgorithm::startTimer() const
 {
     m_start_time = steady_clock::now();
 }
