@@ -13,7 +13,7 @@ bool SerializedSchedule::swapOperations(unsigned index1, unsigned index2)
     }
 
     // operations of the same job have to be ordered
-    if (m_operations[index1].job_num() == m_operations[index2].job_num() and m_operations[index1].op_num() >= m_operations[index2].op_num())
+    if (m_operations[index1].job_num() == m_operations[index2].job_num() and m_operations[index1].op_num() <= m_operations[index2].op_num())
     {
         return false;
     }
