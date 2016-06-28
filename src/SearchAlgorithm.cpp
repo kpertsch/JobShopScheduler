@@ -112,6 +112,20 @@ SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
     return ret;
 }
 
+std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateNeighbourSolution(SerializedSchedule& curr_pos) const
+{
+    auto ret = std::make_shared<SerializedSchedule>(curr_pos);
+    std::uniform_int_distribution<int> uni(0, m_operation_count - 1);
+    unsigned random_idx = uni(m_random_engine);
+
+    while(!ret->swapOperations(random_idx, random_idx + 1))
+    {
+        random_idx = (random_idx + 1) % (m_operation_count);
+    }
+
+    return ret;
+}
+
 std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateRandomSolution() const
 {
     std::shared_ptr<SerializedSchedule> ssched_ptr = std::make_shared<SerializedSchedule>();
