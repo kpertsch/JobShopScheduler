@@ -14,7 +14,7 @@ using namespace jss;
 int main(int argc, char** argv)
 {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::string file{ "instances/hard.jssp" };
+    std::string file{ "instances/benchmark.jssp" };
     if (argc == 2)
     {
         file = argv[1];
@@ -26,11 +26,11 @@ int main(int argc, char** argv)
         return -1;
     std::cout << *ihc.findSolutionInTime(10) << std::endl;
 
-    std::cout << "    -----> RandomSearch:" << std::endl;
-    RandomSearch rs{ file, seed };
-    if (rs.operation_count() < 2)
-        return -1;
-    std::cout << *rs.findSolutionInTime(10) << std::endl;
+//    std::cout << "    -----> RandomSearch:" << std::endl;
+//    RandomSearch rs{ file, seed };
+//    if (rs.operation_count() < 2)
+//        return -1;
+//    std::cout << *rs.findSolutionInTime(10) << std::endl;
 
     std::cout << "    -----> StochasticHillClimber:" << std::endl;
     StochasticHillClimber shc{ file, seed };
