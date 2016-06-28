@@ -14,6 +14,6 @@ private:
     template <class IsFinished>
     std::shared_ptr<Schedule> findSolution(const IsFinished& isFinished) const;
 
-    double T = 7.0;     /// Temperature parameter
+    double T = 7.0; /// Temperature parameter
 };
 }

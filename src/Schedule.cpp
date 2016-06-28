@@ -1,8 +1,8 @@
 #include "Schedule.h"
 
-#include <tuple>
 #include <algorithm>
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 namespace jss
@@ -38,20 +38,18 @@ Schedule::Schedule(std::shared_ptr<SerializedSchedule> ssched, const unsigned& n
         job_times[op.job_num()] = end_time;
     }
 
-    std::vector<std::queue<Operation>>::iterator minEl, maxEl;
+    std::vector<std::queue<Operation> >::iterator minEl, maxEl;
     std::tie(minEl, maxEl) = std::minmax_element(begin(m_machine_schedules), end(m_machine_schedules),
-                                                 [] (std::queue<Operation> const& s1, std::queue<Operation> const& s2)
-                                                  {
-                                                       return s1.back().start_time() + s1.back().op_time() < s2.back().start_time() + s2.back().op_time();
-                                                  });
+        [](std::queue<Operation> const& s1, std::queue<Operation> const& s2) {
+            return s1.back().start_time() + s1.back().op_time() < s2.back().start_time() + s2.back().op_time();
+        });
 
     m_exec_time = maxEl->back().start_time() + maxEl->back().op_time();
 }
 
 std::ostream& operator<<(std::ostream& os, const Schedule& sched)
 {
-    os << std::endl
-       << "********** SCHEDULE ***********" << std::endl;
+    os << "********** SCHEDULE ***********" << std::endl;
     unsigned machine_counter = 0;
     for (auto machine_schedule : sched.m_machine_schedules)
     {

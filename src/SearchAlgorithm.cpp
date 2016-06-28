@@ -12,12 +12,10 @@ using namespace jss;
 SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     : m_random_engine{ std::default_random_engine(seed) }
 {
-    std::cout << std::endl
-              << "*********** INPUT *************" << std::endl;
+    std::cout << "*********** INPUT *************" << std::endl;
 
     std::cout << "File: " << file_name << std::endl
-              << "Seed: " << seed << std::endl
-              << std::endl;
+              << "Seed: " << seed << std::endl;
 
     std::ifstream file{ file_name };
     if (not file)
@@ -82,7 +80,8 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     m_operation_count = op_count;
 
 #ifndef NDEBUG
-    std::cout << m_jobs.size() << " jobs and " << m_machine_count << " machines" << std::endl;
+    std::cout << std::endl
+              << m_jobs.size() << " jobs and " << m_machine_count << " machines" << std::endl;
     for (auto job : m_jobs)
     {
         std::cout << "Job " << job.job_num() << ':' << std::endl;
@@ -118,7 +117,7 @@ std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateNeighbourSolution(S
     std::uniform_int_distribution<int> uni(0, m_operation_count - 1);
     unsigned random_idx = uni(m_random_engine);
 
-    while(!ret->swapOperations(random_idx, random_idx + 1))
+    while (!ret->swapOperations(random_idx, random_idx + 1))
     {
         random_idx = (random_idx + 1) % (m_operation_count);
     }

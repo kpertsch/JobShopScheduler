@@ -12,9 +12,9 @@ std::shared_ptr<Schedule> StochasticHillClimber::findSolution(const IsFinished& 
         auto comp_solution = generateNeighbourSolution(*curr_solution);
         auto comp_schedule = std::make_shared<Schedule>(comp_solution, machine_count(), job_count());
 
-        auto accept_new_prob = 1 / (1 + exp((bestSchedule->exec_time() - comp_schedule->exec_time())) / T);
+        auto accept_new_prob = 1.0 / (1 + exp((bestSchedule->exec_time() - comp_schedule->exec_time())) / T);
 
-        if(((double) rand() / (RAND_MAX)) <= accept_new_prob)
+        if (std::generate_canonical<double, std::numeric_limits<double>::digits>(m_random_engine) <= accept_new_prob)
         {
             curr_solution = comp_solution;
             bestSchedule = comp_schedule;
