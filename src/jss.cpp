@@ -2,6 +2,7 @@
 // Created by karl on 30.04.16.
 //
 
+#include <cassert>
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -14,6 +15,10 @@ using namespace jss;
 
 int main(int argc, char** argv)
 {
+    double time = 60.0;
+    std::cout << time << " seconds to solve the problem per algorithm" << std::endl
+              << std::endl;
+
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::string file{ "instances/benchmark.jssp" };
     if (argc == 2)
@@ -24,14 +29,15 @@ int main(int argc, char** argv)
     std::string file_basename{ file };
     auto pos = file_basename.find_last_of('/');
     if (pos != std::string::npos)
-        file_basename.erase(0, pos);
+        assert(file_basename.length() > pos);
+    file_basename.erase(0, pos + 1);
 
     std::cout << "    -----> IteratedHillClimber:" << std::endl;
     IteratedHillClimber ihc{ file, seed };
     if (ihc.operation_count() < 2)
         return -1;
     std::ofstream ihc_solution_file{ "solutions/ihc-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    std::shared_ptr<Schedule> solution = ihc.findSolutionInTime(10);
+    std::shared_ptr<Schedule> solution = ihc.findSolutionInTime(time);
     ihc_solution_file << *solution;
     ihc_solution_file.close();
     std::cout << "Solution: " << solution->exec_time() << std::endl;
@@ -42,7 +48,7 @@ int main(int argc, char** argv)
     if (rs.operation_count() < 2)
         return -1;
     std::ofstream rs_file{ "solutions/rs-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    solution = rs.findSolutionInTime(10);
+    solution = rs.findSolutionInTime(time);
     rs_file << *solution;
     rs_file.close();
     std::cout << "Solution: " << solution->exec_time() << std::endl;
@@ -53,7 +59,7 @@ int main(int argc, char** argv)
     if (shc.operation_count() < 2)
         return -1;
     std::ofstream shc_file{ "solutions/shc-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    solution = shc.findSolutionInTime(10);
+    solution = shc.findSolutionInTime(time);
     shc_file << *solution;
     shc_file.close();
     std::cout << "Solution: " << solution->exec_time() << std::endl;

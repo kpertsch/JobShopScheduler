@@ -5,12 +5,13 @@ using namespace jss;
 template <class IsFinished>
 std::shared_ptr<Schedule> IteratedHillClimber::findSolution(const IsFinished& isFinished) const
 {
+    bool finished = false;
     std::shared_ptr<Schedule> bestSchedule = std::make_shared<Schedule>(generateRandomSolution(), machine_count(), job_count());
-    while (not isFinished())
+    while (not finished)
     {
         std::shared_ptr<SerializedSchedule> currSolution = generateRandomSolution();
         std::shared_ptr<Schedule> currSchedule = std::make_shared<Schedule>(currSolution, machine_count(), job_count());
-        while (true)
+        while (not finished)
         {
             auto solutionNeighbours = generateNeighbours(*currSolution);
             bool foundBetter = false;
@@ -24,7 +25,7 @@ std::shared_ptr<Schedule> IteratedHillClimber::findSolution(const IsFinished& is
                     currSolution = neighbour;
                 }
             }
-            if (not foundBetter)
+            if (not foundBetter or (finished = isFinished()))
                 break;
         }
         if (currSchedule->exec_time() < bestSchedule->exec_time())
