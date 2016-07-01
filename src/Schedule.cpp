@@ -1,6 +1,7 @@
 #include "Schedule.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <tuple>
 #include <vector>

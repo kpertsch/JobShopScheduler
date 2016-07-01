@@ -78,21 +78,6 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     m_jobs = std::move(jobs);
     m_machine_count = mach_count;
     m_operation_count = op_count;
-
-#ifndef NDEBUG
-    std::cout << std::endl
-              << m_jobs.size() << " jobs and " << m_machine_count << " machines" << std::endl;
-    for (auto job : m_jobs)
-    {
-        std::cout << "Job " << job.job_num() << ':' << std::endl;
-        while (not job.isDone())
-        {
-            Operation op = job.popOperation();
-            std::cout << "    o_{" << op.job_num() << ',' << op.op_num() << "} = (" << op.machine() << ',' << op.op_time() << ')' << std::endl;
-        }
-    }
-    std::cout << "With a total of " << m_operation_count << " operations" << std::endl;
-#endif
 }
 
 std::shared_ptr<std::vector<std::shared_ptr<SerializedSchedule> > >
@@ -111,17 +96,19 @@ SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
     return ret;
 }
 
-std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateNeighbourSolution(SerializedSchedule& curr_pos) const
+std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateNeighbourSolution(const SerializedSchedule& curr_pos) const
 {
     auto ret = std::make_shared<SerializedSchedule>(curr_pos);
     std::uniform_int_distribution<int> uni(0, m_operation_count - 1);
     unsigned random_idx1 = uni(m_random_engine);
-    uni = std::uniform_int_distribution<int>(1, m_operation_count - 1);
-    unsigned random_idx2 = (random_idx1 + uni(m_random_engine)) % m_operation_count;
+    // TODO add back again if we store just job nums instead of operations
+    // at the moment this is to expensive because we have to check for operations in the middle
+    //    uni = std::uniform_int_distribution<int>(1, m_operation_count - 1);
+    //    unsigned random_idx2 = (random_idx1 + uni(m_random_engine)) % m_operation_count;
 
-    while (!ret->swapOperations(random_idx1, random_idx2))
+    while (!ret->swapOperations(random_idx1, random_idx1 + 1))
     {
-        random_idx2 = (random_idx2 + 1) % m_operation_count;
+        random_idx1 = (random_idx1 + 1) % m_operation_count;
     }
 
     return ret;
