@@ -17,8 +17,7 @@ public:
     RandomSearch(const std::string& file_name, unsigned seed);
 
     /// search best solution by random tries
-    std::shared_ptr<Schedule> findSolutionInTime(double time_limit) const override;
-    std::shared_ptr<Schedule> findSolutionInSteps(unsigned step_limit) const override;
+    std::shared_ptr<Schedule> findSolution(double time_limit) const override;
 };
 
 } // end namespace

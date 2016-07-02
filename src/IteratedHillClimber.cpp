@@ -2,9 +2,10 @@
 
 using namespace jss;
 
-template <class IsFinished>
-std::shared_ptr<Schedule> IteratedHillClimber::findSolution(const IsFinished& isFinished) const
+std::shared_ptr<Schedule> IteratedHillClimber::findSolution(double time_limit) const
 {
+    startTimer();
+
     bool finished = false;
     // initialise with something useful
     std::shared_ptr<Schedule> best_sched = generateRandomSolution();
@@ -24,7 +25,7 @@ std::shared_ptr<Schedule> IteratedHillClimber::findSolution(const IsFinished& is
                     found_better = true;
                 }
             }
-            if (not found_better or (finished = isFinished()))
+            if (not found_better or (finished = isTimeLimitReached(time_limit)))
                 break;
         }
         if (curr_sched->exec_time() < best_sched->exec_time())
@@ -33,16 +34,4 @@ std::shared_ptr<Schedule> IteratedHillClimber::findSolution(const IsFinished& is
         }
     }
     return best_sched;
-}
-
-std::shared_ptr<Schedule> IteratedHillClimber::findSolutionInTime(double time_limit) const
-{
-    startTimer();
-    return findSolution([&]() { return isTimeLimitReached(time_limit); });
-}
-
-std::shared_ptr<Schedule> IteratedHillClimber::findSolutionInSteps(unsigned step_limit) const
-{
-    unsigned steps = 0;
-    return findSolution([&]() { return ++steps >= step_limit; });
 }

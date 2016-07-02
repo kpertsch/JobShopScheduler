@@ -52,6 +52,11 @@ std::ostream& operator<<(std::ostream& os, const Schedule& sched)
     return os;
 }
 
+bool Schedule::operator<(const Schedule& other)
+{
+    return this->m_exec_time < other.m_exec_time;
+}
+
 void Schedule::generate_plan()
 {
     for (auto& machine_sched : m_machine_schedules)

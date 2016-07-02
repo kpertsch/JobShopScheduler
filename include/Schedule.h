@@ -23,6 +23,7 @@ public:
 
     bool swapJobSchedulePositions(unsigned index1, unsigned index2);
     friend std::ostream& operator<<(std::ostream& os, const Schedule& sched);
+    bool operator<(const Schedule& other);
 
 private:
     void generate_plan();
