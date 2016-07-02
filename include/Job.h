@@ -2,7 +2,7 @@
 
 #include "Operation.h"
 
-#include <queue>
+#include <vector>
 
 namespace jss
 {
@@ -23,29 +23,42 @@ public:
             return false;
         }
 
-        m_operations.push(op);
+        m_operations.push_back(op);
         return true;
-    }
-
-    Operation popOperation()
-    {
-        Operation ret = m_operations.front();
-        m_operations.pop();
-        return ret;
     }
 
     bool isDone() const
     {
-        return m_operations.empty();
+        return m_index == m_operations.size();
     }
 
-    unsigned job_num()
+    void resetToBeginning()
+    {
+        m_index = 0;
+    }
+
+    Operation popOperation()
+    {
+        if (isDone())
+        {
+            resetToBeginning();
+        }
+        return m_operations[m_index++];
+    }
+
+    unsigned job_num() const
     {
         return m_job_num;
     }
 
+    unsigned operation_count() const
+    {
+        return m_operations.size();
+    }
+
 private:
-    std::queue<Operation> m_operations;
+    std::vector<Operation> m_operations;
     unsigned m_job_num;
+    unsigned m_index = 0;
 };
 }

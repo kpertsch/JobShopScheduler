@@ -21,12 +21,11 @@ std::shared_ptr<Schedule> RandomSearch::findSolutionInTime(double time_limit) co
 {
     startTimer();
 
-    auto best_schedule = std::make_shared<Schedule>(generateRandomSolution(), m_machine_count, m_jobs.size());
+    std::shared_ptr<Schedule> best_schedule = generateRandomSolution();
 
     while (not isTimeLimitReached(time_limit))
     {
-        auto serialized_schedule = generateRandomSolution();
-        auto schedule = std::make_shared<Schedule>(serialized_schedule, m_machine_count, m_jobs.size());
+        std::shared_ptr<Schedule> schedule = generateRandomSolution();
         if (schedule->exec_time() < best_schedule->exec_time())
         {
             best_schedule = schedule;
@@ -37,12 +36,11 @@ std::shared_ptr<Schedule> RandomSearch::findSolutionInTime(double time_limit) co
 }
 std::shared_ptr<Schedule> RandomSearch::findSolutionInSteps(unsigned step_limit) const
 {
-    auto best_schedule = std::make_shared<Schedule>(generateRandomSolution(), m_machine_count, m_jobs.size());
+    std::shared_ptr<Schedule> best_schedule = generateRandomSolution();
 
     for (unsigned step = 0; step < step_limit; ++step)
     {
-        auto serialized_schedule = generateRandomSolution();
-        auto schedule = std::make_shared<Schedule>(serialized_schedule, m_machine_count, m_jobs.size());
+        std::shared_ptr<Schedule> schedule = generateRandomSolution();
         if (schedule->exec_time() < best_schedule->exec_time())
         {
             best_schedule = schedule;

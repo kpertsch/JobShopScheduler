@@ -23,8 +23,7 @@ int main(int argc, char** argv)
     (void)steps;
     time = 60;
 
-    std::cout << time << " seconds to solve the problem per algorithm" << std::endl
-              << std::endl;
+    std::cout << time << " seconds to solve the problem per algorithm" << std::endl;
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::string file{ "instances/benchmark.jssp" };
@@ -41,28 +40,28 @@ int main(int argc, char** argv)
 
     std::shared_ptr<Schedule> solution;
 
-    //    std::cout << "    -----> IteratedHillClimber:" << std::endl;
-    //    IteratedHillClimber ihc{ file, seed };
-    //    if (ihc.operation_count() < 2)
-    //        return -1;
-    //    std::ofstream ihc_solution_file{ "solutions/ihc-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    ////    solution = ihc.findSolutionInTime(time);
-    //    solution = ihc.findSolutionInSteps(steps);
-    //    ihc_solution_file << *solution;
-    //    ihc_solution_file.close();
-    //    std::cout << "Solution: " << solution->exec_time() << std::endl;
+    //	std::cout << "    -----> IteratedHillClimber:" << std::endl;
+    //	IteratedHillClimber ihc{ file, seed };
+    //	if (ihc.operation_count() < 2)
+    //	    return -1;
+    //	std::ofstream ihc_solution_file{ "solutions/ihc-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
+    //	solution = ihc.findSolutionInTime(time);
+    //	//        solution = ihc.findSolutionInSteps(steps);
+    //	ihc_solution_file << *solution;
+    //	ihc_solution_file.close();
+    //	std::cout << "Solution: " << solution->exec_time() << std::endl;
 
-    //    std::cout << std::endl
-    //              << "    -----> RandomSearch:" << std::endl;
-    //    RandomSearch rs{ file, seed };
-    //    if (rs.operation_count() < 2)
-    //        return -1;
-    //    std::ofstream rs_file{ "solutions/rs-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    ////    solution = rs.findSolutionInTime(time);
-    //    solution = rs.findSolutionInSteps(steps);
-    //    rs_file << *solution;
-    //    rs_file.close();
-    //    std::cout << "Solution: " << solution->exec_time() << std::endl;
+    //	std::cout << std::endl
+    //		  << "    -----> RandomSearch:" << std::endl;
+    //	RandomSearch rs{ file, seed };
+    //	if (rs.operation_count() < 2)
+    //	    return -1;
+    //	std::ofstream rs_file{ "solutions/rs-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
+    //	solution = rs.findSolutionInTime(time);
+    //	//        solution = rs.findSolutionInSteps(steps);
+    //	rs_file << *solution;
+    //	rs_file.close();
+    //	std::cout << "Solution: " << solution->exec_time() << std::endl;
 
     std::cout << std::endl
               << "    -----> StochasticHillClimber:" << std::endl;

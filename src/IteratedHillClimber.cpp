@@ -6,34 +6,33 @@ template <class IsFinished>
 std::shared_ptr<Schedule> IteratedHillClimber::findSolution(const IsFinished& isFinished) const
 {
     bool finished = false;
-    std::shared_ptr<Schedule> bestSchedule = std::make_shared<Schedule>(generateRandomSolution(), machine_count(), job_count());
+    // initialise with something useful
+    std::shared_ptr<Schedule> best_sched = generateRandomSolution();
     while (not finished)
     {
-        std::shared_ptr<SerializedSchedule> currSolution = generateRandomSolution();
-        std::shared_ptr<Schedule> currSchedule = std::make_shared<Schedule>(currSolution, machine_count(), job_count());
+        std::shared_ptr<Schedule> curr_sched = generateRandomSolution();
         while (not finished)
         {
-            auto solutionNeighbours = generateNeighbours(*currSolution);
-            bool foundBetter = false;
-            for (std::shared_ptr<SerializedSchedule> neighbour : *solutionNeighbours)
+            bool found_better = false;
+            auto neighbours = generateNeighbours(*curr_sched);
+            for (std::shared_ptr<Schedule> neighbour_sched : *neighbours)
             {
-                std::shared_ptr<Schedule> neighbourSchedule = std::make_shared<Schedule>(neighbour, machine_count(), job_count());
-                if (neighbourSchedule->exec_time() < currSchedule->exec_time())
+
+                if (neighbour_sched->exec_time() < curr_sched->exec_time())
                 {
-                    foundBetter = true;
-                    currSchedule = neighbourSchedule;
-                    currSolution = neighbour;
+                    curr_sched = neighbour_sched;
+                    found_better = true;
                 }
             }
-            if (not foundBetter or (finished = isFinished()))
+            if (not found_better or (finished = isFinished()))
                 break;
         }
-        if (currSchedule->exec_time() < bestSchedule->exec_time())
+        if (curr_sched->exec_time() < best_sched->exec_time())
         {
-            bestSchedule = currSchedule;
+            best_sched = curr_sched;
         }
     }
-    return bestSchedule;
+    return best_sched;
 }
 
 std::shared_ptr<Schedule> IteratedHillClimber::findSolutionInTime(double time_limit) const

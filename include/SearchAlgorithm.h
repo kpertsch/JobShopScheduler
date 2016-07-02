@@ -6,7 +6,6 @@
 
 #include "Job.h"
 #include "Schedule.h"
-#include "SerializedSchedule.h"
 
 #include <chrono>
 #include <memory>
@@ -42,16 +41,16 @@ public:
     }
 
 protected:
-    std::shared_ptr<SerializedSchedule> generateRandomSolution() const;
-    std::shared_ptr<std::vector<std::shared_ptr<SerializedSchedule> > > generateNeighbours(const SerializedSchedule& curr_pos) const;
-    std::shared_ptr<SerializedSchedule> generateNeighbourSolution(const SerializedSchedule& curr_pos) const; /// generate one neighbour solution at random
+    std::shared_ptr<Schedule> generateRandomSolution() const;
+    std::shared_ptr<std::vector<std::shared_ptr<Schedule> > > generateNeighbours(const Schedule& curr_pos) const;
+    std::shared_ptr<Schedule> generateNeighbourSolution(const Schedule& curr_pos) const; /// generate one neighbour solution at random
 
     void startTimer() const;
     bool isTimeLimitReached(double time_limit) const;
 
     mutable std::chrono::steady_clock::time_point m_start_time;
     mutable std::default_random_engine m_random_engine;
-    std::vector<Job> m_jobs;
+    mutable std::vector<Job> m_jobs;
     unsigned m_machine_count = 0;
     unsigned m_operation_count = 0;
 };

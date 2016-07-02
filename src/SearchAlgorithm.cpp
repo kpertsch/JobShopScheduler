@@ -12,8 +12,6 @@ using namespace jss;
 SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     : m_random_engine{ std::default_random_engine(seed) }
 {
-    std::cout << "*********** INPUT *************" << std::endl;
-
     std::cout << "File: " << file_name << std::endl
               << "Seed: " << seed << std::endl;
 
@@ -80,15 +78,39 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     m_operation_count = op_count;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<SerializedSchedule> > >
-SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
+std::shared_ptr<Schedule> SearchAlgorithm::generateRandomSolution() const
 {
-    auto ret = std::make_shared<std::vector<std::shared_ptr<SerializedSchedule> > >();
-    assert(m_operation_count);
+    std::vector<unsigned> job_schedule;
+    job_schedule.reserve(m_operation_count);
+
+    std::uniform_int_distribution<int> uni(0, m_jobs.size() - 1);
+    std::vector<unsigned> job_added_count = std::vector<unsigned>(m_jobs.size(), 0);
+
+    // generate a random job number and add it to the schedule if the refered job isn't finished
+    for (unsigned jobs_added = 0; jobs_added < m_operation_count; ++jobs_added)
+    {
+        unsigned random_job = uni(m_random_engine);
+        // can't add jobs that are already contained as many times as they have operations
+        while (job_added_count[random_job] == m_jobs[random_job].operation_count())
+        {
+            random_job = (random_job + 1) % m_jobs.size();
+        }
+
+        job_schedule.push_back(random_job);
+        ++(job_added_count[random_job]);
+    }
+
+    return std::make_shared<Schedule>(std::move(job_schedule), m_machine_count, m_jobs);
+}
+
+std::shared_ptr<std::vector<std::shared_ptr<Schedule> > >
+SearchAlgorithm::generateNeighbours(const Schedule& curr_pos) const
+{
+    auto ret = std::make_shared<std::vector<std::shared_ptr<Schedule> > >();
     for (unsigned i = 0; i < m_operation_count - 1; ++i)
     {
-        auto copy = std::make_shared<SerializedSchedule>(curr_pos);
-        if (copy->swapOperations(i, i + 1))
+        auto copy = std::make_shared<Schedule>(curr_pos);
+        if (copy->swapJobSchedulePositions(i, i + 1))
         {
             ret->push_back(copy);
         }
@@ -96,50 +118,19 @@ SearchAlgorithm::generateNeighbours(const SerializedSchedule& curr_pos) const
     return ret;
 }
 
-std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateNeighbourSolution(const SerializedSchedule& curr_pos) const
+std::shared_ptr<Schedule> SearchAlgorithm::generateNeighbourSolution(const Schedule& curr_pos) const
 {
-    auto ret = std::make_shared<SerializedSchedule>(curr_pos);
+    auto ret = std::make_shared<Schedule>(curr_pos);
     std::uniform_int_distribution<int> uni(0, m_operation_count - 1);
     unsigned random_idx1 = uni(m_random_engine);
-    // TODO add back again if we store just job nums instead of operations
-    // at the moment this is to expensive because we have to check for operations in the middle
-    //    uni = std::uniform_int_distribution<int>(1, m_operation_count - 1);
-    //    unsigned random_idx2 = (random_idx1 + uni(m_random_engine)) % m_operation_count;
+    unsigned random_idx2 = uni(m_random_engine);
 
-    while (!ret->swapOperations(random_idx1, random_idx1 + 1))
+    while (!ret->swapJobSchedulePositions(random_idx1, random_idx2))
     {
         random_idx1 = (random_idx1 + 1) % m_operation_count;
     }
 
     return ret;
-}
-
-std::shared_ptr<SerializedSchedule> SearchAlgorithm::generateRandomSolution() const
-{
-    std::shared_ptr<SerializedSchedule> ssched_ptr = std::make_shared<SerializedSchedule>();
-
-    auto jobs = m_jobs; // create working copy
-
-    std::uniform_int_distribution<int> uni(0, jobs.size() - 1);
-
-    unsigned jobs_added = 0;
-    while (jobs_added < m_operation_count)
-    {
-        auto random_idx = uni(m_random_engine);
-        bool added_job = false;
-        do
-        {
-            if (!jobs.at(random_idx).isDone())
-            {
-                ssched_ptr->addOperation(jobs.at(random_idx).popOperation());
-                added_job = true;
-                ++jobs_added;
-            }
-            random_idx = (random_idx + 1) % (jobs.size());
-        } while (!added_job);
-    }
-
-    return ssched_ptr;
 }
 
 using namespace std::chrono;
