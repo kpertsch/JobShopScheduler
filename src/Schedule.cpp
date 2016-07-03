@@ -99,53 +99,129 @@ std::tuple<double, double, double> hsv2rgb(double h, double s, double v)
 
 void Schedule::storeAsImage(const std::string& file_name) const
 {
-    const double machine_width = 30;
-    const double space_width = 10;
-    const double total_width = m_exec_time * 0.5;
-    Cairo::RefPtr<Cairo::ImageSurface> surface
-        = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, total_width, m_machine_count * machine_width + (m_machine_count + 1) * space_width);
+    const double space_height = 10;
+    const double time_line_height = 30;
+    const double machine_height = 40;
+    const double total_height = m_machine_count * machine_height + (m_machine_count + 2) * space_height + time_line_height;
+    const double space_width = 20;
+    const double total_width = m_exec_time + 2.0 * space_width;
+    Cairo::RefPtr<Cairo::ImageSurface> surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, total_width, total_height);
     Cairo::RefPtr<Cairo::Context> cr = Cairo::Context::create(surface);
     // background
     cr->save();
-    cr->set_source_rgb(0.2, 0.2, 0.2);
+    cr->set_source_rgb(0.8, 0.8, 0.8);
     cr->paint();
     cr->restore();
 
     for (std::queue<Operation> maschine_queue : m_machine_schedules)
     {
-        // operation
+        // operation frame
         while (not maschine_queue.empty())
         {
             Operation op = maschine_queue.front();
             maschine_queue.pop();
 
-            double x = (op.start_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width) + space_width;
-            double width = (op.op_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
-            double y = op.machine() * machine_width + (op.machine() + 1) * space_width;
-            double height = machine_width;
+            const double x = space_width + (op.start_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double width = (op.op_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double y = op.machine() * machine_height + (op.machine() + 1) * space_height;
+            const double height = machine_height;
 
             double r, g, b;
-            std::tie(r, g, b) = hsv2rgb((360.0 / m_jobs.size()) * op.job_num(), 1.0, 1.0);
+            std::tie(r, g, b) = hsv2rgb((360.0 / m_jobs.size()) * op.job_num(), 0.8, 1.0);
 
-            // time rectangle
+            // colored time rectangle
             cr->save();
-            cr->set_source_rgba(r, g, b, 0.5);
+            cr->set_source_rgb(r, g, b);
             cr->rectangle(x, y, width, height);
             cr->fill();
             cr->restore();
 
-            // operation number text
-            double font_size = 12.0;
+            // outer time frame
+            cr->save();
+            cr->set_line_width(1.0);
+            cr->rectangle(x, y, width, height);
+            cr->stroke();
+            cr->restore();
+
+            // inner time frame
+            cr->save();
+            cr->set_line_width(1.0);
+            cr->rectangle(x + 1, y + 1, width - 2, height - 2);
+            cr->set_source_rgb(1.0, 1.0, 1.0);
+            cr->stroke();
+            cr->restore();
+        }
+    }
+
+    // text over everything else
+    for (std::queue<Operation> maschine_queue : m_machine_schedules)
+    {
+        // operation text
+        while (not maschine_queue.empty())
+        {
+            Operation op = maschine_queue.front();
+            maschine_queue.pop();
+
+            const double x = space_width + (op.start_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double width = (op.op_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double y = op.machine() * machine_height + (op.machine() + 1) * space_height;
+            const double height = machine_height;
+
             cr->save();
             cr->select_font_face("sans serif", Cairo::FontSlant::FONT_SLANT_NORMAL, Cairo::FontWeight::FONT_WEIGHT_BOLD);
-            cr->set_font_size(font_size);
+            cr->set_font_size(10.0);
             std::string op_num_str = std::to_string(op.op_num());
             Cairo::TextExtents text_extents;
             cr->get_text_extents(op_num_str, text_extents);
-            cr->move_to(x + 0.5 * (width - text_extents.width), y + 0.5 * (height - text_extents.height) + text_extents.height);
+            cr->move_to(x + 0.5 * (width - text_extents.height), y + 0.5 * (height - text_extents.width));
+            cr->rotate_degrees(90.0);
             cr->show_text(op_num_str);
             cr->restore();
         }
+    }
+    const double time_line_thickness = 2.0;
+    // time line top
+    cr->save();
+    cr->set_line_width(time_line_thickness);
+    cr->move_to(space_width - 2, total_height - time_line_height - space_height);
+    cr->line_to(total_width - space_width + 2, total_height - time_line_height - space_height);
+    cr->stroke();
+    cr->restore();
+    const double marker_font_size = 8.0;
+    const unsigned small_step = 10;
+    const unsigned big_step = 10 * small_step;
+    for (unsigned marker = 0.0; marker <= m_exec_time; marker += small_step)
+    {
+        const double marker_pos = space_width + static_cast<double>(marker - (marker & 1)) / m_exec_time * (total_width - 2.0 * space_width);
+        bool big = (marker % big_step) == 0;
+        // time line marker
+        cr->save();
+        cr->move_to(marker_pos, total_height - time_line_height - space_height);
+        if (big)
+        {
+            cr->line_to(marker_pos, total_height - time_line_height - space_height + 8);
+            cr->set_line_width(time_line_thickness);
+        }
+        else
+        {
+            cr->line_to(marker_pos, total_height - time_line_height - space_height + 4);
+            cr->set_line_width(time_line_thickness / 2.0);
+        }
+        cr->stroke();
+        cr->restore();
+
+        if (not big)
+            continue;
+        // time lime legend
+        cr->save();
+        cr->select_font_face("sans serif", Cairo::FontSlant::FONT_SLANT_NORMAL, Cairo::FontWeight::FONT_WEIGHT_BOLD);
+        cr->set_font_size(marker_font_size);
+        std::string marker_str = std::to_string(marker);
+        Cairo::TextExtents text_extents;
+        cr->get_text_extents(marker_str, text_extents);
+        cr->move_to(marker_pos - 0.5 * text_extents.width, total_height - time_line_height - space_height + text_extents.height + 10);
+        cr->show_text(marker_str);
+        cr->restore();
     }
 
 #ifdef CAIRO_HAS_PNG_FUNCTIONS

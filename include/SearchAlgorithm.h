@@ -22,8 +22,7 @@ public:
     SearchAlgorithm(const std::string& file_name, unsigned seed);
 
     // time_limit in seconds
-    std::shared_ptr<Schedule> findSolutionParallel(double time_limit) const;
-    virtual std::shared_ptr<Schedule> findSolution(double time_limit) const = 0;
+    std::shared_ptr<Schedule> findSolution(double time_limit) const;
 
     unsigned job_count() const { return m_jobs.size(); }
 
@@ -34,6 +33,7 @@ public:
     unsigned thread_count() const { return m_thread_count; }
 
 protected:
+    virtual std::shared_ptr<Schedule> findSolutionSerial(double time_limit) const = 0;
     std::default_random_engine& current_random_engine() const;
 
     std::shared_ptr<Schedule> generateRandomSolution() const;

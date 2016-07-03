@@ -1,7 +1,3 @@
-//
-// Created by karl on 01.05.16.
-//
-
 #pragma once
 
 #include "SearchAlgorithm.h"
@@ -13,11 +9,9 @@ class RandomSearch : public SearchAlgorithm
 {
 
 public:
-    /// Constructor
     RandomSearch(const std::string& file_name, unsigned seed);
 
-    /// search best solution by random tries
-    std::shared_ptr<Schedule> findSolution(double time_limit) const override;
+protected:
+    std::shared_ptr<Schedule> findSolutionSerial(double time_limit) const override;
 };
-
-} // end namespace
+}

@@ -20,10 +20,8 @@ RandomSearch::RandomSearch(const std::string& file_name, unsigned seed)
 {
 }
 
-std::shared_ptr<Schedule> RandomSearch::findSolution(double time_limit) const
+std::shared_ptr<Schedule> RandomSearch::findSolutionSerial(double time_limit) const
 {
-    startTimer();
-
     std::shared_ptr<Schedule> best_schedule = generateRandomSolution();
 
     while (not isTimeLimitReached(time_limit))

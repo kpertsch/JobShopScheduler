@@ -2,10 +2,8 @@
 
 using namespace jss;
 
-std::shared_ptr<Schedule> IteratedHillClimber::findSolution(double time_limit) const
+std::shared_ptr<Schedule> IteratedHillClimber::findSolutionSerial(double time_limit) const
 {
-    startTimer();
-
     bool finished = false;
     // initialise with something useful
     std::shared_ptr<Schedule> best_sched = generateRandomSolution();

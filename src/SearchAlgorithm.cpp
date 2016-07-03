@@ -88,12 +88,13 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     m_operation_count = op_count;
 }
 
-std::shared_ptr<Schedule> SearchAlgorithm::findSolutionParallel(double time_limit) const
+std::shared_ptr<Schedule> SearchAlgorithm::findSolution(double time_limit) const
 {
     std::vector<std::shared_ptr<Schedule> > schedules{ m_thread_count, std::shared_ptr<Schedule>() };
+    startTimer();
 #pragma omp parallel
     {
-        schedules[omp_get_thread_num()] = findSolution(time_limit);
+        schedules[omp_get_thread_num()] = findSolutionSerial(time_limit);
     }
 
     return *std::min_element(

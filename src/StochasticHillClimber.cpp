@@ -2,10 +2,8 @@
 
 using namespace jss;
 
-std::shared_ptr<Schedule> StochasticHillClimber::findSolution(double time_limit) const
+std::shared_ptr<Schedule> StochasticHillClimber::findSolutionSerial(double time_limit) const
 {
-    startTimer();
-
     std::shared_ptr<Schedule> best_sched = generateRandomSolution();
     std::shared_ptr<Schedule> curr_sched = best_sched;
     while (not isTimeLimitReached(time_limit))
