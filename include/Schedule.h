@@ -16,12 +16,12 @@ class Schedule
 public:
     Schedule(std::vector<unsigned>&& job_schedule, unsigned machine_count, std::vector<Job>& jobs);
 
-    unsigned exec_time() const
-    {
-        return m_exec_time;
-    }
+    unsigned exec_time() const { return m_exec_time; }
 
     bool swapJobSchedulePositions(unsigned index1, unsigned index2);
+
+    void storeAsImage(const std::string& file_name) const;
+
     friend std::ostream& operator<<(std::ostream& os, const Schedule& sched);
     bool operator<(const Schedule& other);
 

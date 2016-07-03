@@ -14,40 +14,19 @@ public:
     {
     }
 
-    void setStartTime(unsigned start_time)
-    {
-        m_start_time = start_time;
-    }
+    void setStartTime(unsigned start_time) { m_start_time = start_time; }
 
-    unsigned job_num() const
-    {
-        return m_job_num;
-    }
+    unsigned job_num() const { return m_job_num; }
 
-    unsigned op_num() const
-    {
-        return m_op_num;
-    }
+    unsigned op_num() const { return m_op_num; }
 
-    unsigned machine() const
-    {
-        return m_machine;
-    }
+    unsigned machine() const { return m_machine; }
 
-    unsigned op_time() const
-    {
-        return m_op_time;
-    }
+    unsigned op_time() const { return m_op_time; }
 
-    unsigned start_time() const
-    {
-        return m_start_time;
-    }
+    unsigned start_time() const { return m_start_time; }
 
-    bool isStartTimeSet() const
-    {
-        return m_start_time == -1;
-    }
+    bool isStartTimeSet() const { return m_start_time == -1; }
 
 private:
     unsigned m_job_num;

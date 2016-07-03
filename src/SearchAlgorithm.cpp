@@ -14,17 +14,15 @@ using namespace jss;
 
 SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     : m_thread_count{ static_cast<unsigned>(omp_get_max_threads()) }
-    , m_random_engines{ static_cast<std::vector<std::default_random_engine>::size_type>(omp_get_max_threads()),
-        std::default_random_engine(seed) }
+    , m_random_engines{ static_cast<std::vector<std::default_random_engine>::size_type>(omp_get_max_threads()), std::default_random_engine(seed) }
 {
 
-    for (int i = 1; i < m_thread_count; ++i)
+    for (unsigned i = 1; i < m_thread_count; ++i)
     {
         m_random_engines[i].discard(i);
     }
 
-    std::cout << "File: " << file_name << std::endl
-              << "Seed: " << seed << std::endl;
+    std::cout << "File: " << file_name << std::endl << "Seed: " << seed << std::endl;
 
     std::ifstream file{ file_name };
     if (not file)
@@ -73,7 +71,8 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
             }
             if (machine_num >= mach_count)
             {
-                std::cerr << "Wrong machine number in Operation " << op_num << " of job " << job_num << " in file '" << file_name << "'!" << std::endl;
+                std::cerr << "Wrong machine number in Operation " << op_num << " of job " << job_num << " in file '" << file_name << "'!"
+                          << std::endl;
                 return;
             }
             job.addOperation(Operation{ job_num, op_num, machine_num, op_time });
@@ -97,9 +96,8 @@ std::shared_ptr<Schedule> SearchAlgorithm::findSolutionParallel(double time_limi
         schedules[omp_get_thread_num()] = findSolution(time_limit);
     }
 
-    return *std::min_element(schedules.begin(),
-        schedules.end(),
-        [](std::shared_ptr<Schedule> first, std::shared_ptr<Schedule> second) { return *first < *second; });
+    return *std::min_element(
+        schedules.begin(), schedules.end(), [](std::shared_ptr<Schedule> first, std::shared_ptr<Schedule> second) { return *first < *second; });
 }
 std::default_random_engine& SearchAlgorithm::current_random_engine() const
 {
@@ -116,11 +114,13 @@ std::shared_ptr<Schedule> SearchAlgorithm::generateRandomSolution() const
     std::uniform_int_distribution<int> uni(0, jobs.size() - 1);
     std::vector<unsigned> job_added_count = std::vector<unsigned>(jobs.size(), 0);
 
-    // generate a random job number and add it to the schedule if the refered job isn't finished
+    // generate a random job number and add it to the schedule if the refered job
+    // isn't finished
     for (unsigned jobs_added = 0; jobs_added < m_operation_count; ++jobs_added)
     {
         unsigned random_job = uni(current_random_engine());
-        // can't add jobs that are already contained as many times as they have operations
+        // can't add jobs that are already contained as many times as they have
+        // operations
         while (job_added_count[random_job] == jobs[random_job].operation_count())
         {
             random_job = (random_job + 1) % jobs.size();
@@ -133,8 +133,7 @@ std::shared_ptr<Schedule> SearchAlgorithm::generateRandomSolution() const
     return std::make_shared<Schedule>(std::move(job_schedule), m_machine_count, jobs);
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<Schedule> > >
-SearchAlgorithm::generateNeighbours(const Schedule& curr_pos) const
+std::shared_ptr<std::vector<std::shared_ptr<Schedule> > > SearchAlgorithm::generateNeighbours(const Schedule& curr_pos) const
 {
     auto ret = std::make_shared<std::vector<std::shared_ptr<Schedule> > >();
     for (unsigned i = 0; i < m_operation_count - 1; ++i)
@@ -165,10 +164,7 @@ std::shared_ptr<Schedule> SearchAlgorithm::generateNeighbourSolution(const Sched
 
 using namespace std::chrono;
 
-void SearchAlgorithm::startTimer() const
-{
-    m_start_time = steady_clock::now();
-}
+void SearchAlgorithm::startTimer() const { m_start_time = steady_clock::now(); }
 
 bool SearchAlgorithm::isTimeLimitReached(double time_limit) const
 {

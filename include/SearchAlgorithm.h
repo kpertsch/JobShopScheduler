@@ -25,25 +25,13 @@ public:
     std::shared_ptr<Schedule> findSolutionParallel(double time_limit) const;
     virtual std::shared_ptr<Schedule> findSolution(double time_limit) const = 0;
 
-    unsigned job_count() const
-    {
-        return m_jobs.size();
-    }
+    unsigned job_count() const { return m_jobs.size(); }
 
-    unsigned machine_count() const
-    {
-        return m_machine_count;
-    }
+    unsigned machine_count() const { return m_machine_count; }
 
-    unsigned operation_count() const
-    {
-        return m_operation_count;
-    }
+    unsigned operation_count() const { return m_operation_count; }
 
-    unsigned thread_count() const
-    {
-        return m_thread_count;
-    }
+    unsigned thread_count() const { return m_thread_count; }
 
 protected:
     std::default_random_engine& current_random_engine() const;

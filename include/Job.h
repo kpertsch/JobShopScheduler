@@ -27,15 +27,9 @@ public:
         return true;
     }
 
-    bool isDone() const
-    {
-        return m_index == m_operations.size();
-    }
+    bool isDone() const { return m_index == m_operations.size(); }
 
-    void resetToBeginning()
-    {
-        m_index = 0;
-    }
+    void resetToBeginning() { m_index = 0; }
 
     Operation popOperation()
     {
@@ -46,15 +40,9 @@ public:
         return m_operations[m_index++];
     }
 
-    unsigned job_num() const
-    {
-        return m_job_num;
-    }
+    unsigned job_num() const { return m_job_num; }
 
-    unsigned operation_count() const
-    {
-        return m_operations.size();
-    }
+    unsigned operation_count() const { return m_operations.size(); }
 
 private:
     std::vector<Operation> m_operations;
