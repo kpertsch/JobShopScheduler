@@ -14,15 +14,15 @@ using namespace jss;
 
 SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
     : m_thread_count{ static_cast<unsigned>(omp_get_max_threads()) }
-    , m_random_engines{ static_cast<std::vector<std::default_random_engine>::size_type>(omp_get_max_threads()), std::default_random_engine(seed) }
+    , m_random_engines{ m_thread_count, std::default_random_engine(seed) }
+    , m_swap_counts(m_thread_count, 0)
+    , m_random_counts(m_thread_count, 0)
 {
 
     for (unsigned i = 1; i < m_thread_count; ++i)
     {
         m_random_engines[i].discard(i);
     }
-
-    std::cout << "File: " << file_name << std::endl << "Seed: " << seed << std::endl;
 
     std::ifstream file{ file_name };
     if (not file)
@@ -90,6 +90,15 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed)
 
 std::shared_ptr<Schedule> SearchAlgorithm::findSolution(double time_limit) const
 {
+    // reset counter
+    for (unsigned &count : m_swap_counts) {
+        count = 0;
+    }
+
+    for (unsigned &count : m_random_counts) {
+        count = 0;
+    }
+
     std::vector<std::shared_ptr<Schedule> > schedules{ m_thread_count, std::shared_ptr<Schedule>() };
     startTimer();
 #pragma omp parallel
@@ -100,12 +109,14 @@ std::shared_ptr<Schedule> SearchAlgorithm::findSolution(double time_limit) const
     return *std::min_element(
         schedules.begin(), schedules.end(), [](std::shared_ptr<Schedule> first, std::shared_ptr<Schedule> second) { return *first < *second; });
 }
+
 std::default_random_engine& SearchAlgorithm::current_random_engine() const
 {
     int id = omp_get_thread_num();
     m_random_engines.at(id).discard(m_thread_count - 1);
     return m_random_engines.at(id);
 }
+
 std::shared_ptr<Schedule> SearchAlgorithm::generateRandomSolution() const
 {
     std::vector<unsigned> job_schedule;
@@ -131,6 +142,7 @@ std::shared_ptr<Schedule> SearchAlgorithm::generateRandomSolution() const
         ++(job_added_count[random_job]);
     }
 
+    ++(m_random_counts[omp_get_thread_num()]);
     return std::make_shared<Schedule>(std::move(job_schedule), m_machine_count, jobs);
 }
 
@@ -139,18 +151,20 @@ std::shared_ptr<std::vector<std::shared_ptr<Schedule> > > SearchAlgorithm::gener
     auto ret = std::make_shared<std::vector<std::shared_ptr<Schedule> > >();
     for (unsigned i = 0; i < m_operation_count - 1; ++i)
     {
-        auto copy = std::make_shared<Schedule>(curr_pos);
+        auto copy = std::make_shared<Schedule>(curr_pos, false);
         if (copy->swapJobSchedulePositions(i, i + 1))
         {
             ret->push_back(copy);
         }
     }
+
+    m_swap_counts[omp_get_thread_num()] += ret->size();
     return ret;
 }
 
 std::shared_ptr<Schedule> SearchAlgorithm::generateNeighbourSolution(const Schedule& curr_pos) const
 {
-    auto ret = std::make_shared<Schedule>(curr_pos);
+    auto ret = std::make_shared<Schedule>(curr_pos, false);
     std::uniform_int_distribution<int> uni(0, m_operation_count - 1);
     unsigned random_idx1 = uni(current_random_engine());
     unsigned random_idx2 = uni(current_random_engine());
@@ -160,6 +174,7 @@ std::shared_ptr<Schedule> SearchAlgorithm::generateNeighbourSolution(const Sched
         random_idx1 = (random_idx1 + 1) % m_operation_count;
     }
 
+    ++(m_swap_counts[omp_get_thread_num()]);
     return ret;
 }
 

@@ -15,6 +15,7 @@ class Schedule
 
 public:
     Schedule(std::vector<unsigned>&& job_schedule, unsigned machine_count, std::vector<Job>& jobs);
+    Schedule(const Schedule& other, bool copy_machine_schedule = true);
 
     unsigned exec_time() const { return m_exec_time; }
 

@@ -15,7 +15,7 @@ using namespace jss;
 
 int main(int argc, char** argv)
 {
-    double time = 10.0;
+    double time = 60;
 
     std::cout << time << " seconds to solve the problem per algorithm" << std::endl;
 
@@ -34,41 +34,39 @@ int main(int argc, char** argv)
 
     std::shared_ptr<Schedule> solution;
 
-    // std::cout << std::endl << "    -----> IteratedHillClimber:" << std::endl;
-    // IteratedHillClimber ihc{ file, seed };
-    // if (ihc.operation_count() < 2)
-    // return -1;
-    // std::ofstream ihc_solution_file{ "solutions/ihc-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    // std::cout << "Threads: " << ihc.thread_count() << std::endl;
-    // solution = ihc.findSolution(time);
-    // solution->storeAsImage("solutions/ihc-" + file_basename + ".png");
-    // ihc_solution_file << *solution;
-    // ihc_solution_file.close();
-    // std::cout << "Solution: " << solution->exec_time() << std::endl;
 
-    // std::cout << std::endl << "    -----> RandomSearch:" << std::endl;
-    // RandomSearch rs{ file, seed };
-    // if (rs.operation_count() < 2)
-    // return -1;
-    // std::ofstream rs_file{ "solutions/rs-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    // std::cout << "Threads: " << rs.thread_count() << std::endl;
-    // solution = rs.findSolution(time);
-    // solution->storeAsImage("solutions/rs-" + file_basename + ".png");
-    // rs_file << *solution;
-    // rs_file.close();
-    // std::cout << "Solution: " << solution->exec_time() << std::endl;
+    std::vector<std::tuple<std::shared_ptr<SearchAlgorithm>, std::string, std::string>> algorithms {
+        std::make_tuple(std::make_shared<IteratedHillClimber>(file, seed), "IteratedHillClimber", "ihc"),
+        std::make_tuple(std::make_shared<RandomSearch>(file, seed), "RandomSearch", "rs"),
+        std::make_tuple(std::make_shared<StochasticHillClimber>(file, seed), "StochasticHillClimber", "shc"),
+    };
 
-    std::cout << std::endl << "    -----> StochasticHillClimber:" << std::endl;
-    StochasticHillClimber shc{ file, seed };
-    if (shc.operation_count() < 2)
-        return -1;
-    std::ofstream shc_file{ "solutions/shc-" + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
-    std::cout << "Threads: " << shc.thread_count() << std::endl;
-    solution = shc.findSolution(time);
-    solution->storeAsImage("solutions/shc-" + file_basename + ".png");
-    shc_file << *solution;
-    shc_file.close();
-    std::cout << "Solution: " << solution->exec_time() << std::endl;
+    std::cout << std::endl
+              << "File: " << file << std::endl
+              << "Seed: " << seed << std::endl
+              << "Threads: " << std::get<0>(algorithms[0])->thread_count() << std::endl;
+
+    for (auto &algorithm_tuple : algorithms) {
+        std::shared_ptr<SearchAlgorithm> algorithm;
+        std::string long_name, short_name;
+        std::tie(algorithm, long_name, short_name) = algorithm_tuple;
+        std::cout << std::endl << "    -----> " + long_name + ':' << std::endl;
+        if (algorithm->operation_count() < 2) return -1;
+        std::ofstream solution_file{ "solutions/" + short_name + '-' + file_basename + ".sol", std::fstream::out | std::fstream::trunc };
+        solution = algorithm->findSolution(time);
+        unsigned swap_count = algorithm->swap_count();
+        unsigned random_count = algorithm->random_count();
+        if (swap_count) {
+            std::cout << "Swap operations: " << swap_count << std::endl;
+        }
+        if (random_count > algorithm->thread_count()) {
+            std::cout << "Random solutions: " << random_count << std::endl;
+        }
+        solution->storeAsImage("solutions/" + short_name + '-' + file_basename + ".png");
+        solution_file << *solution;
+        solution_file.close();
+        std::cout << "Solution: " << solution->exec_time() << std::endl;
+    }
 
     return 0;
 }

@@ -32,6 +32,10 @@ public:
 
     unsigned thread_count() const { return m_thread_count; }
 
+    unsigned swap_count() const { return std::accumulate(m_swap_counts.begin(), m_swap_counts.end(), 0); }
+
+    unsigned random_count() const { return std::accumulate(m_random_counts.begin(), m_random_counts.end(), 0); }
+
 protected:
     virtual std::shared_ptr<Schedule> findSolutionSerial(double time_limit) const = 0;
     std::default_random_engine& current_random_engine() const;
@@ -49,6 +53,8 @@ protected:
     mutable std::vector<std::vector<Job> > m_jobs;
     unsigned m_machine_count = 0;
     unsigned m_operation_count = 0;
+    mutable std::vector<unsigned> m_swap_counts;
+    mutable std::vector<unsigned> m_random_counts;
 };
 
 } // end namespace

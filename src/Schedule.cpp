@@ -23,6 +23,17 @@ Schedule::Schedule(std::vector<unsigned>&& job_schedule, unsigned machine_count,
     generate_plan();
 }
 
+Schedule::Schedule(const Schedule& other, bool copy_machine_schedule)
+    : m_job_schedule{ other.m_job_schedule }
+    , m_machine_count{ other.m_machine_count }
+    , m_jobs{ other.m_jobs }
+    , m_machine_schedules{ m_machine_count, std::queue<Operation>() }
+{
+    if (copy_machine_schedule) {
+        m_machine_schedules = other.m_machine_schedules;
+    }
+}
+
 bool Schedule::swapJobSchedulePositions(unsigned index1, unsigned index2)
 {
     // no invalid indices and useless swaps
