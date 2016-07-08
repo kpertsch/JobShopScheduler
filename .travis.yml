@@ -12,6 +12,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-4.9
+            - libcairomm-1.0-dev
       env: COMPILER=g++-4.9
     
 before_install:
