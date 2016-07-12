@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <list>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -20,7 +21,7 @@ Schedule::Schedule(std::vector<unsigned>&& job_schedule, unsigned machine_count,
     , m_jobs{ jobs }
     , m_machine_schedules{ machine_count, std::queue<Operation>() }
 {
-    generate_plan();
+    generatePlan();
 }
 
 Schedule::Schedule(const Schedule& other, bool copy_machine_schedule)
@@ -29,10 +30,15 @@ Schedule::Schedule(const Schedule& other, bool copy_machine_schedule)
     , m_jobs{ other.m_jobs }
     , m_machine_schedules{ m_machine_count, std::queue<Operation>() }
 {
-    if (copy_machine_schedule) {
+    if (copy_machine_schedule)
+    {
         m_machine_schedules = other.m_machine_schedules;
     }
 }
+
+unsigned Schedule::execTime() const { return m_exec_time; }
+
+unsigned Schedule::relativeFitnessToWorst(unsigned worstExecTime) { return worstExecTime - m_exec_time; }
 
 bool Schedule::swapJobSchedulePositions(unsigned index1, unsigned index2)
 {
@@ -43,9 +49,53 @@ bool Schedule::swapJobSchedulePositions(unsigned index1, unsigned index2)
     }
 
     std::swap(m_job_schedule[index1], m_job_schedule[index2]);
-    generate_plan();
+    generatePlan();
 
     return true;
+}
+
+std::shared_ptr<Schedule> Schedule::precedencePreservingCrossover(const std::vector<bool>& randDecs, const Schedule& sol1, const Schedule& sol2)
+{
+    std::vector<unsigned> job_schedule;
+    job_schedule.reserve(sol1.m_job_schedule.size());
+
+    std::list<unsigned> sched1{ sol1.m_job_schedule.begin(), sol1.m_job_schedule.end() };
+    std::list<unsigned> sched2{ sol2.m_job_schedule.begin(), sol2.m_job_schedule.end() };
+
+    unsigned jobIdx;
+    for (bool dec : randDecs)
+    {
+        if (dec)
+        {
+            jobIdx = sched1.front();
+            sched1.pop_front();
+            sched2.erase(std::find(sched2.begin(), sched2.end(), jobIdx));
+        }
+        else
+        {
+            jobIdx = sched2.front();
+            sched2.pop_front();
+            sched1.erase(std::find(sched1.begin(), sched1.end(), jobIdx));
+        }
+        job_schedule.push_back(jobIdx);
+    }
+
+    return std::make_shared<Schedule>(std::move(job_schedule), sol1.m_machine_count, sol1.m_jobs);
+}
+
+void Schedule::inverseRangeMove(unsigned beginIdx, unsigned endIdx, unsigned newBeginIdx)
+{
+    std::vector<unsigned> reverseRange;
+    reverseRange.reserve(endIdx - beginIdx);
+
+    for (int i = endIdx - 1; i >= static_cast<int>(beginIdx); --i)
+    {
+        reverseRange.push_back(m_job_schedule[i]);
+    }
+    m_job_schedule.erase(m_job_schedule.begin() + beginIdx, m_job_schedule.begin() + endIdx);
+    m_job_schedule.insert(m_job_schedule.begin() + newBeginIdx, reverseRange.begin(), reverseRange.end());
+
+    generatePlan();
 }
 
 std::tuple<double, double, double> hsv2rgb(double h, double s, double v)
@@ -132,13 +182,13 @@ void Schedule::storeAsImage(const std::string& file_name) const
             Operation op = maschine_queue.front();
             maschine_queue.pop();
 
-            const double x = space_width + (op.start_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
-            const double width = (op.op_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double x = space_width + (op.startTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double width = (op.operationTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
             const double y = op.machine() * machine_height + (op.machine() + 1) * space_height;
             const double height = machine_height;
 
             double r, g, b;
-            std::tie(r, g, b) = hsv2rgb((360.0 / m_jobs.size()) * op.job_num(), 0.8, 1.0);
+            std::tie(r, g, b) = hsv2rgb((360.0 / m_jobs.size()) * op.jobNum(), 0.8, 1.0);
 
             // colored time rectangle
             cr->save();
@@ -173,15 +223,15 @@ void Schedule::storeAsImage(const std::string& file_name) const
             Operation op = maschine_queue.front();
             maschine_queue.pop();
 
-            const double x = space_width + (op.start_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
-            const double width = (op.op_time() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double x = space_width + (op.startTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double width = (op.operationTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
             const double y = op.machine() * machine_height + (op.machine() + 1) * space_height;
             const double height = machine_height;
 
             cr->save();
             cr->select_font_face("sans serif", Cairo::FontSlant::FONT_SLANT_NORMAL, Cairo::FontWeight::FONT_WEIGHT_BOLD);
             cr->set_font_size(10.0);
-            std::string op_num_str = std::to_string(op.op_num());
+            std::string op_num_str = std::to_string(op.operationNum());
             Cairo::TextExtents text_extents;
             cr->get_text_extents(op_num_str, text_extents);
             cr->move_to(x + 0.5 * (width - text_extents.height), y + 0.5 * (height - text_extents.width));
@@ -245,14 +295,14 @@ void Schedule::storeAsImage(const std::string& file_name) const
 std::ostream& operator<<(std::ostream& os, const Schedule& sched)
 {
     unsigned machine_counter = 0;
-    for (auto machine_schedule : sched.m_machine_schedules)
+    for (std::queue<Operation> machine_schedule : sched.m_machine_schedules)
     {
         os << "Machine " << machine_counter << ":" << std::endl;
         while (!machine_schedule.empty())
         {
-            auto op = machine_schedule.front();
-            os << "Job: " << op.job_num() << ", Operation: " << op.op_num() << ", Start time: " << op.start_time() << ", Duration: " << op.op_time()
-               << std::endl;
+            Operation op = machine_schedule.front();
+            os << "Job: " << op.jobNum() << ", Operation: " << op.operationNum() << ", Start time: " << op.startTime()
+               << ", Duration: " << op.operationTime() << std::endl;
             machine_schedule.pop();
         }
         ++machine_counter;
@@ -263,7 +313,7 @@ std::ostream& operator<<(std::ostream& os, const Schedule& sched)
 
 bool Schedule::operator<(const Schedule& other) { return this->m_exec_time < other.m_exec_time; }
 
-void Schedule::generate_plan()
+void Schedule::generatePlan()
 {
     for (auto& machine_sched : m_machine_schedules)
     {
@@ -279,18 +329,19 @@ void Schedule::generate_plan()
     // sort operations to respective machine schedules
     for (unsigned job_index : m_job_schedule)
     {
-        assert(not m_jobs.at(job_index).isDone());
-        Operation op = m_jobs.at(job_index).popOperation();
-        auto start_time = std::max(machine_times.at(op.machine()), job_times.at(op.job_num()));
+        Job& job = m_jobs.at(job_index);
+        Operation op = job.currentOperation();
+        job.popOperation();
+        auto start_time = std::max(machine_times.at(op.machine()), job_times.at(op.jobNum()));
 
         // set start time in operation and push to machine schedule
         op.setStartTime(start_time);
         m_machine_schedules.at(op.machine()).push(op);
 
         // update time track arrays
-        end_time = start_time + op.op_time();
+        end_time = start_time + op.operationTime();
         machine_times.at(op.machine()) = end_time;
-        job_times.at(op.job_num()) = end_time;
+        job_times.at(op.jobNum()) = end_time;
     }
 
     for (Job& job : m_jobs)
@@ -301,9 +352,9 @@ void Schedule::generate_plan()
     std::vector<std::queue<Operation> >::iterator minEl, maxEl;
     std::tie(minEl, maxEl) = std::minmax_element(
         m_machine_schedules.begin(), m_machine_schedules.end(), [](std::queue<Operation> const& s1, std::queue<Operation> const& s2) {
-            return s1.back().start_time() + s1.back().op_time() < s2.back().start_time() + s2.back().op_time();
+            return s1.back().startTime() + s1.back().operationTime() < s2.back().startTime() + s2.back().operationTime();
         });
 
-    m_exec_time = maxEl->back().start_time() + maxEl->back().op_time();
+    m_exec_time = maxEl->back().startTime() + maxEl->back().operationTime();
 }
 }

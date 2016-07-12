@@ -11,38 +11,21 @@ class Job
 {
 
 public:
-    Job(unsigned job_num)
-        : m_job_num{ job_num }
-    {
-    }
+    Job(unsigned job_num);
 
-    bool addOperation(const Operation& op)
-    {
-        if (op.job_num() != this->m_job_num or (not m_operations.empty() and m_operations.back().op_num() >= op.op_num()))
-        {
-            return false;
-        }
+    bool addOperation(const Operation& op);
 
-        m_operations.push_back(op);
-        return true;
-    }
+    bool isDone() const;
 
-    bool isDone() const { return m_index == m_operations.size(); }
+    void resetToBeginning();
 
-    void resetToBeginning() { m_index = 0; }
+    const Operation& currentOperation() const;
 
-    Operation popOperation()
-    {
-        if (isDone())
-        {
-            resetToBeginning();
-        }
-        return m_operations[m_index++];
-    }
+    void popOperation();
 
-    unsigned job_num() const { return m_job_num; }
+    unsigned jobNum() const;
 
-    unsigned operation_count() const { return m_operations.size(); }
+    unsigned operationCount() const;
 
 private:
     std::vector<Operation> m_operations;

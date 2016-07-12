@@ -14,12 +14,23 @@ class Schedule
 {
 
 public:
+    enum class DispatchRule
+    {
+        ShortestProcessSequence,
+        ShortestProcessingTime,
+        LongestTotalProcessingTime,
+    };
+
     Schedule(std::vector<unsigned>&& job_schedule, unsigned machine_count, std::vector<Job>& jobs);
     Schedule(const Schedule& other, bool copy_machine_schedule = true);
 
-    unsigned exec_time() const { return m_exec_time; }
+    unsigned execTime() const;
+    unsigned relativeFitnessToWorst(unsigned worstExecTime);
 
     bool swapJobSchedulePositions(unsigned index1, unsigned index2);
+    void inverseRangeMove(unsigned beginIdx, unsigned endIdx, unsigned newBeginIdx);
+
+    static std::shared_ptr<Schedule> precedencePreservingCrossover(const std::vector<bool>& randDecs, const Schedule& sol1, const Schedule& sol2);
 
     void storeAsImage(const std::string& file_name) const;
 
@@ -27,7 +38,7 @@ public:
     bool operator<(const Schedule& other);
 
 private:
-    void generate_plan();
+    void generatePlan();
 
     std::vector<unsigned> m_job_schedule;
     unsigned m_machine_count;
