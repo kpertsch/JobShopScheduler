@@ -9,24 +9,25 @@ namespace jss
 
 using sched_ptr = std::shared_ptr<Schedule>;
 
-enum class CounterType : unsigned
-{
-    Mutation,
-    Recombination
-};
+const std::string GeneticAlgorithm::longName = "GeneticAlgorithm";
+const std::string GeneticAlgorithm::shortName = "ga";
 
 GeneticAlgorithm::GeneticAlgorithm(const std::string& file_name, unsigned seed)
-    : SearchAlgorithm(file_name, seed, 2)
+    : SearchAlgorithm(file_name, seed, 4)
 {
 }
 
-std::string GeneticAlgorithm::extraCounterName(unsigned counter_idx) const
+std::string GeneticAlgorithm::counterName(unsigned counter_idx) const
 {
     switch (counter_idx)
     {
-    case static_cast<unsigned>(CounterType::Mutation):
+    case static_cast<unsigned>(GeneticAlgorithm::CounterType::Initial):
+        return "Initial individuals created";
+    case static_cast<unsigned>(GeneticAlgorithm::CounterType::Neighbour):
+        return "Neighbour solutions created";
+    case static_cast<unsigned>(GeneticAlgorithm::CounterType::Mutation):
         return "Mutations performed";
-    case static_cast<unsigned>(CounterType::Recombination):
+    case static_cast<unsigned>(GeneticAlgorithm::CounterType::Recombination):
         return "Recombinations performed";
     default:
         return "";
@@ -48,10 +49,12 @@ std::shared_ptr<Schedule> GeneticAlgorithm::findSolutionSerial(double time_limit
         {
             population.push_back(generateRandomSolution());
         }
-        std::sort(population.begin(), population.end(), [](const sched_ptr& sched1, const sched_ptr& sched2) { return *sched1 < *sched2; });
+        std::sort(population.begin(), population.end(),
+            [](const sched_ptr& sched1, const sched_ptr& sched2) { return *sched1 < *sched2; });
         sched_ptr best_evolution_solution = population[0];
 
-        while ((generation - last_improving_generation) < 50 and not(finished = isTimeLimitReached(time_limit)))
+        while ((generation - last_improving_generation) < 50
+            and not(finished = isTimeLimitReached(time_limit)))
         {
             std::vector<sched_ptr> offsprings;
             generateOffsprings(population, offsprings);
@@ -86,21 +89,34 @@ std::shared_ptr<Schedule> GeneticAlgorithm::findSolutionSerial(double time_limit
 
 void GeneticAlgorithm::mutate(std::shared_ptr<Schedule> individual) const
 {
-    if (std::generate_canonical<double, std::numeric_limits<double>::digits>(currentRandomEngine()) < mutation_probability)
+    if (std::generate_canonical<double, std::numeric_limits<double>::digits>(currentRandomEngine())
+        < mutation_probability)
     {
-        increaseCounter(static_cast<unsigned>(CounterType::Mutation));
         unsigned beginIdx, endIdx, newBeginIdx;
         std::uniform_int_distribution<unsigned> randomBeginIdx{ 0, operationCount() - 1 };
         beginIdx = randomBeginIdx(currentRandomEngine());
         std::uniform_int_distribution<unsigned> randomEndIdx{ beginIdx + 1, operationCount() };
         endIdx = randomEndIdx(currentRandomEngine());
-        std::uniform_int_distribution<unsigned> randomNewBeginIdx{ 0, operationCount() - endIdx + beginIdx };
-        newBeginIdx = randomNewBeginIdx(currentRandomEngine());
+        unsigned elementsAfterDeletion = operationCount() - endIdx + beginIdx;
+        if (elementsAfterDeletion)
+        {
+            std::uniform_int_distribution<unsigned> randomNewBeginOffset{ 1,
+                elementsAfterDeletion };
+            newBeginIdx = (beginIdx + randomNewBeginOffset(currentRandomEngine()))
+                % (elementsAfterDeletion + 1);
+        }
+        else
+        {
+            newBeginIdx = 0;
+        }
         individual->inverseRangeMove(beginIdx, endIdx, newBeginIdx);
+
+        increaseCounter(static_cast<unsigned>(GeneticAlgorithm::CounterType::Mutation));
     }
 }
 
-std::shared_ptr<Schedule> GeneticAlgorithm::recombine(std::shared_ptr<Schedule> parent1, std::shared_ptr<Schedule> parent2) const
+std::shared_ptr<Schedule> GeneticAlgorithm::recombine(
+    std::shared_ptr<Schedule> parent1, std::shared_ptr<Schedule> parent2) const
 {
     std::vector<bool> decisions;
     std::bernoulli_distribution randBool;
@@ -113,8 +129,8 @@ std::shared_ptr<Schedule> GeneticAlgorithm::recombine(std::shared_ptr<Schedule> 
     return Schedule::precedencePreservingCrossover(decisions, *parent1, *parent2);
 }
 
-void GeneticAlgorithm::generateOffsprings(
-    const std::vector<std::shared_ptr<Schedule> >& population, std::vector<std::shared_ptr<Schedule> >& offsprings) const
+void GeneticAlgorithm::generateOffsprings(const std::vector<std::shared_ptr<Schedule> >& population,
+    std::vector<std::shared_ptr<Schedule> >& offsprings) const
 {
     offsprings.reserve(offspringCount);
     // parent selection and recombination
@@ -122,7 +138,8 @@ void GeneticAlgorithm::generateOffsprings(
     potential_parents.reserve(populationCount);
 
     // roulette wheel selection
-    assert(std::is_sorted(population.begin(), population.end(), [](const sched_ptr& sched1, const sched_ptr& sched2) { return *sched1 < *sched2; }));
+    assert(std::is_sorted(population.begin(), population.end(),
+        [](const sched_ptr& sched1, const sched_ptr& sched2) { return *sched1 < *sched2; }));
     // worst individual is still at the end
     unsigned max_time = population.back()->execTime() + 5;
 
@@ -165,7 +182,8 @@ void GeneticAlgorithm::generateOffsprings(
 void GeneticAlgorithm::selectSurvivors(std::vector<std::shared_ptr<Schedule> >& population) const
 {
     // select as many best individuals as the target population count for the next generation
-    std::sort(population.begin(), population.end(), [](const sched_ptr& sched1, const sched_ptr& sched2) { return *sched1 < *sched2; });
+    std::sort(population.begin(), population.end(),
+        [](const sched_ptr& sched1, const sched_ptr& sched2) { return *sched1 < *sched2; });
     population.resize(populationCount);
 }
 }

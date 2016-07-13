@@ -10,7 +10,8 @@ Job::Job(unsigned job_num)
 
 bool Job::addOperation(const Operation& op)
 {
-    if (op.jobNum() != this->m_job_num or (not m_operations.empty() and m_operations.back().operationNum() >= op.operationNum()))
+    if (op.jobNum() != this->m_job_num
+        or (not m_operations.empty() and m_operations.back().operationNum() >= op.operationNum()))
     {
         return false;
     }

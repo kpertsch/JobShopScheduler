@@ -19,12 +19,18 @@ namespace jss
 class SearchAlgorithm
 {
 public:
+    enum class CounterType : unsigned
+    {
+        Random,
+        Neighbour,
+    };
+
     SearchAlgorithm(const std::string& file_name, unsigned seed, unsigned counters);
 
     // time_limit in seconds
     std::shared_ptr<Schedule> findSolution(double time_limit) const;
     unsigned counter(unsigned counter_idx) const;
-    std::string counterName(unsigned counter_idx) const;
+    virtual std::string counterName(unsigned counter_idx) const;
     unsigned countersCount() const;
     unsigned jobCount() const;
     unsigned machineCount() const;
@@ -32,7 +38,6 @@ public:
     unsigned threadCount() const;
 
 protected:
-    virtual std::string extraCounterName(unsigned counter_idx) const = 0;
     void increaseCounter(unsigned counter_idx, unsigned inc = 1) const;
 
     std::default_random_engine& currentRandomEngine() const;

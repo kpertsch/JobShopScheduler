@@ -11,16 +11,10 @@
 
 using namespace jss;
 
-enum class CounterType : unsigned
-{
-    Random,
-    Swap,
-};
-
 SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed, unsigned counters)
     : m_thread_count{ static_cast<unsigned>(omp_get_max_threads()) }
     , m_random_engines{ m_thread_count, std::default_random_engine(seed) }
-    , m_counters(counters + 2, std::vector<unsigned>(m_thread_count, 0))
+    , m_counters((counters > 2) ? counters : 2, std::vector<unsigned>(m_thread_count, 0))
 {
 
     for (unsigned i = 1; i < m_thread_count; ++i)
@@ -31,8 +25,8 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed, un
     std::ifstream file{ file_name };
     if (not file)
     {
-        std::cerr << "Couldn't open file '" << file_name << "'!" << std::endl;
-        return;
+        std::cerr << "j3s: Couldn't open file »" << file_name << "«" << std::endl;
+        exit(1);
     }
 
     // ignore comment line
@@ -42,8 +36,9 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed, un
     unsigned job_count = 0, mach_count = 0;
     if (not(file >> job_count >> mach_count) or job_count == 0 or mach_count == 0)
     {
-        std::cerr << "Couldn't read the number of jobs and machines in file '" << file_name << "'!" << std::endl;
-        return;
+        std::cerr << "j3s: Couldn't read the number of jobs and machines in file »" << file_name
+                  << "«" << std::endl;
+        exit(2);
     }
     // ignore newline
     file.ignore();
@@ -57,8 +52,9 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed, un
         std::getline(file, job_line_str);
         if (not file)
         {
-            std::cerr << "Couldn't read job " << job_num << " in file '" << file_name << "'!" << std::endl;
-            return;
+            std::cerr << "j3s: Couldn't read job " << job_num << " in file »" << file_name << "«"
+                      << std::endl;
+            exit(2);
         }
 
         std::istringstream job_line{ job_line_str };
@@ -70,14 +66,15 @@ SearchAlgorithm::SearchAlgorithm(const std::string& file_name, unsigned seed, un
         {
             if (not file)
             {
-                std::cerr << "Couldn't read operation " << op_num << " of job " << job_num << " in file '" << file_name << "'!" << std::endl;
-                return;
+                std::cerr << "j3s: Couldn't read operation " << op_num << " of job " << job_num
+                          << " in file »" << file_name << "«" << std::endl;
+                exit(2);
             }
             if (machine_num >= mach_count)
             {
-                std::cerr << "Wrong machine number in Operation " << op_num << " of job " << job_num << " in file '" << file_name << "'!"
-                          << std::endl;
-                return;
+                std::cerr << "j3s: Wrong machine number in Operation " << op_num << " of job "
+                          << job_num << " in file »" << file_name << "«" << std::endl;
+                exit(2);
             }
             job.addOperation(Operation{ job_num, op_num, machine_num, op_time });
             ++op_num;
@@ -103,15 +100,18 @@ std::shared_ptr<Schedule> SearchAlgorithm::findSolution(double time_limit) const
         }
     }
 
-    std::vector<std::shared_ptr<Schedule> > schedules{ m_thread_count, std::shared_ptr<Schedule>() };
+    std::vector<std::shared_ptr<Schedule> > schedules{ m_thread_count,
+        std::shared_ptr<Schedule>() };
     startTimer();
 #pragma omp parallel
     {
         schedules[omp_get_thread_num()] = findSolutionSerial(time_limit);
     }
 
-    return *std::min_element(
-        schedules.begin(), schedules.end(), [](std::shared_ptr<Schedule> first, std::shared_ptr<Schedule> second) { return *first < *second; });
+    return *std::min_element(schedules.begin(), schedules.end(),
+        [](std::shared_ptr<Schedule> first, std::shared_ptr<Schedule> second) {
+            return *first < *second;
+        });
 }
 
 std::string SearchAlgorithm::counterName(unsigned counter_idx) const
@@ -120,10 +120,10 @@ std::string SearchAlgorithm::counterName(unsigned counter_idx) const
     {
     case static_cast<unsigned>(CounterType::Random):
         return "Random solutions generated";
-    case static_cast<unsigned>(CounterType::Swap):
-        return "Swap operations performed";
+    case static_cast<unsigned>(CounterType::Neighbour):
+        return "Neighbour solutions generated";
     default:
-        return extraCounterName(counter_idx - 2);
+        return "";
     }
 }
 
@@ -135,7 +135,10 @@ unsigned SearchAlgorithm::operationCount() const { return m_operation_count; }
 
 unsigned SearchAlgorithm::threadCount() const { return m_thread_count; }
 
-void SearchAlgorithm::increaseCounter(unsigned counter_idx, unsigned inc) const { m_counters[counter_idx + 2][omp_get_thread_num()] += inc; }
+void SearchAlgorithm::increaseCounter(unsigned counter_idx, unsigned inc) const
+{
+    m_counters[counter_idx][omp_get_thread_num()] += inc;
+}
 
 unsigned SearchAlgorithm::countersCount() const { return m_counters.size(); }
 
@@ -182,7 +185,7 @@ std::shared_ptr<Schedule> SearchAlgorithm::generateRandomSolution() const
 
 std::shared_ptr<Schedule> SearchAlgorithm::generateNeighbourSolution(const Schedule& sol) const
 {
-    auto ret = std::make_shared<Schedule>(sol, false);
+    std::shared_ptr<Schedule> ret = std::make_shared<Schedule>(sol, false);
     std::uniform_int_distribution<int> uni(0, m_operation_count - 1);
     unsigned random_idx1 = uni(currentRandomEngine());
     unsigned random_idx2 = uni(currentRandomEngine());
@@ -192,7 +195,7 @@ std::shared_ptr<Schedule> SearchAlgorithm::generateNeighbourSolution(const Sched
         random_idx1 = (random_idx1 + 1) % m_operation_count;
     }
 
-    ++(m_counters[static_cast<unsigned>(CounterType::Swap)][omp_get_thread_num()]);
+    ++(m_counters[static_cast<unsigned>(CounterType::Neighbour)][omp_get_thread_num()]);
     return ret;
 }
 
@@ -202,5 +205,6 @@ void SearchAlgorithm::startTimer() const { m_start_time = steady_clock::now(); }
 
 bool SearchAlgorithm::isTimeLimitReached(double time_limit) const
 {
-    return duration_cast<duration<double> >(steady_clock::now() - m_start_time).count() >= time_limit;
+    return duration_cast<duration<double> >(steady_clock::now() - m_start_time).count()
+        >= time_limit;
 }

@@ -15,7 +15,8 @@
 namespace jss
 {
 
-Schedule::Schedule(std::vector<unsigned>&& job_schedule, unsigned machine_count, std::vector<Job>& jobs)
+Schedule::Schedule(
+    std::vector<unsigned>&& job_schedule, unsigned machine_count, std::vector<Job>& jobs)
     : m_job_schedule{ job_schedule }
     , m_machine_count{ machine_count }
     , m_jobs{ jobs }
@@ -38,12 +39,16 @@ Schedule::Schedule(const Schedule& other, bool copy_machine_schedule)
 
 unsigned Schedule::execTime() const { return m_exec_time; }
 
-unsigned Schedule::relativeFitnessToWorst(unsigned worstExecTime) { return worstExecTime - m_exec_time; }
+unsigned Schedule::relativeFitnessToWorst(unsigned worstExecTime)
+{
+    return worstExecTime - m_exec_time;
+}
 
 bool Schedule::swapJobSchedulePositions(unsigned index1, unsigned index2)
 {
     // no invalid indices and useless swaps
-    if (index1 >= m_job_schedule.size() or index2 >= m_job_schedule.size() or index1 == index2 or m_job_schedule[index1] == m_job_schedule[index2])
+    if (index1 >= m_job_schedule.size() or index2 >= m_job_schedule.size() or index1 == index2
+        or m_job_schedule[index1] == m_job_schedule[index2])
     {
         return false;
     }
@@ -54,7 +59,8 @@ bool Schedule::swapJobSchedulePositions(unsigned index1, unsigned index2)
     return true;
 }
 
-std::shared_ptr<Schedule> Schedule::precedencePreservingCrossover(const std::vector<bool>& randDecs, const Schedule& sol1, const Schedule& sol2)
+std::shared_ptr<Schedule> Schedule::precedencePreservingCrossover(
+    const std::vector<bool>& randDecs, const Schedule& sol1, const Schedule& sol2)
 {
     std::vector<unsigned> job_schedule;
     job_schedule.reserve(sol1.m_job_schedule.size());
@@ -93,7 +99,8 @@ void Schedule::inverseRangeMove(unsigned beginIdx, unsigned endIdx, unsigned new
         reverseRange.push_back(m_job_schedule[i]);
     }
     m_job_schedule.erase(m_job_schedule.begin() + beginIdx, m_job_schedule.begin() + endIdx);
-    m_job_schedule.insert(m_job_schedule.begin() + newBeginIdx, reverseRange.begin(), reverseRange.end());
+    m_job_schedule.insert(
+        m_job_schedule.begin() + newBeginIdx, reverseRange.begin(), reverseRange.end());
 
     generatePlan();
 }
@@ -163,10 +170,12 @@ void Schedule::storeAsImage(const std::string& file_name) const
     const double space_height = 10;
     const double time_line_height = 30;
     const double machine_height = 40;
-    const double total_height = m_machine_count * machine_height + (m_machine_count + 2) * space_height + time_line_height;
+    const double total_height = m_machine_count * machine_height
+        + (m_machine_count + 2) * space_height + time_line_height;
     const double space_width = 20;
     const double total_width = m_exec_time + 2.0 * space_width;
-    Cairo::RefPtr<Cairo::ImageSurface> surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, total_width, total_height);
+    Cairo::RefPtr<Cairo::ImageSurface> surface
+        = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, total_width, total_height);
     Cairo::RefPtr<Cairo::Context> cr = Cairo::Context::create(surface);
     // background
     cr->save();
@@ -182,8 +191,11 @@ void Schedule::storeAsImage(const std::string& file_name) const
             Operation op = maschine_queue.front();
             maschine_queue.pop();
 
-            const double x = space_width + (op.startTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
-            const double width = (op.operationTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double x = space_width
+                + (op.startTime() / static_cast<double>(m_exec_time))
+                    * (total_width - 2.0 * space_width);
+            const double width = (op.operationTime() / static_cast<double>(m_exec_time))
+                * (total_width - 2.0 * space_width);
             const double y = op.machine() * machine_height + (op.machine() + 1) * space_height;
             const double height = machine_height;
 
@@ -223,18 +235,23 @@ void Schedule::storeAsImage(const std::string& file_name) const
             Operation op = maschine_queue.front();
             maschine_queue.pop();
 
-            const double x = space_width + (op.startTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
-            const double width = (op.operationTime() / static_cast<double>(m_exec_time)) * (total_width - 2.0 * space_width);
+            const double x = space_width
+                + (op.startTime() / static_cast<double>(m_exec_time))
+                    * (total_width - 2.0 * space_width);
+            const double width = (op.operationTime() / static_cast<double>(m_exec_time))
+                * (total_width - 2.0 * space_width);
             const double y = op.machine() * machine_height + (op.machine() + 1) * space_height;
             const double height = machine_height;
 
             cr->save();
-            cr->select_font_face("sans serif", Cairo::FontSlant::FONT_SLANT_NORMAL, Cairo::FontWeight::FONT_WEIGHT_BOLD);
+            cr->select_font_face("sans serif", Cairo::FontSlant::FONT_SLANT_NORMAL,
+                Cairo::FontWeight::FONT_WEIGHT_BOLD);
             cr->set_font_size(10.0);
             std::string op_num_str = std::to_string(op.operationNum());
             Cairo::TextExtents text_extents;
             cr->get_text_extents(op_num_str, text_extents);
-            cr->move_to(x + 0.5 * (width - text_extents.height), y + 0.5 * (height - text_extents.width));
+            cr->move_to(
+                x + 0.5 * (width - text_extents.height), y + 0.5 * (height - text_extents.width));
             cr->rotate_degrees(90.0);
             cr->show_text(op_num_str);
             cr->restore();
@@ -253,7 +270,9 @@ void Schedule::storeAsImage(const std::string& file_name) const
     const unsigned big_step = 10 * small_step;
     for (unsigned marker = 0.0; marker <= m_exec_time; marker += small_step)
     {
-        const double marker_pos = space_width + static_cast<double>(marker - (marker & 1)) / m_exec_time * (total_width - 2.0 * space_width);
+        const double marker_pos = space_width
+            + static_cast<double>(marker - (marker & 1)) / m_exec_time
+                * (total_width - 2.0 * space_width);
         bool big = (marker % big_step) == 0;
         // time line marker
         cr->save();
@@ -275,12 +294,14 @@ void Schedule::storeAsImage(const std::string& file_name) const
             continue;
         // time lime legend
         cr->save();
-        cr->select_font_face("sans serif", Cairo::FontSlant::FONT_SLANT_NORMAL, Cairo::FontWeight::FONT_WEIGHT_BOLD);
+        cr->select_font_face(
+            "sans serif", Cairo::FontSlant::FONT_SLANT_NORMAL, Cairo::FontWeight::FONT_WEIGHT_BOLD);
         cr->set_font_size(marker_font_size);
         std::string marker_str = std::to_string(marker);
         Cairo::TextExtents text_extents;
         cr->get_text_extents(marker_str, text_extents);
-        cr->move_to(marker_pos - 0.5 * text_extents.width, total_height - time_line_height - space_height + text_extents.height + 10);
+        cr->move_to(marker_pos - 0.5 * text_extents.width,
+            total_height - time_line_height - space_height + text_extents.height + 10);
         cr->show_text(marker_str);
         cr->restore();
     }
@@ -301,8 +322,9 @@ std::ostream& operator<<(std::ostream& os, const Schedule& sched)
         while (!machine_schedule.empty())
         {
             Operation op = machine_schedule.front();
-            os << "Job: " << op.jobNum() << ", Operation: " << op.operationNum() << ", Start time: " << op.startTime()
-               << ", Duration: " << op.operationTime() << std::endl;
+            os << "Job: " << op.jobNum() << ", Operation: " << op.operationNum()
+               << ", Start time: " << op.startTime() << ", Duration: " << op.operationTime()
+               << std::endl;
             machine_schedule.pop();
         }
         ++machine_counter;
@@ -350,10 +372,12 @@ void Schedule::generatePlan()
     }
 
     std::vector<std::queue<Operation> >::iterator minEl, maxEl;
-    std::tie(minEl, maxEl) = std::minmax_element(
-        m_machine_schedules.begin(), m_machine_schedules.end(), [](std::queue<Operation> const& s1, std::queue<Operation> const& s2) {
-            return s1.back().startTime() + s1.back().operationTime() < s2.back().startTime() + s2.back().operationTime();
-        });
+    std::tie(minEl, maxEl)
+        = std::minmax_element(m_machine_schedules.begin(), m_machine_schedules.end(),
+            [](std::queue<Operation> const& s1, std::queue<Operation> const& s2) {
+                return s1.back().startTime() + s1.back().operationTime()
+                    < s2.back().startTime() + s2.back().operationTime();
+            });
 
     m_exec_time = maxEl->back().startTime() + maxEl->back().operationTime();
 }

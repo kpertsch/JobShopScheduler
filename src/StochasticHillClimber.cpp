@@ -2,15 +2,11 @@
 
 using namespace jss;
 
+const std::string StochasticHillClimber::longName = "StochasticHillClimber";
+const std::string StochasticHillClimber::shortName = "shc";
 StochasticHillClimber::StochasticHillClimber(const std::string& file_name, unsigned seed)
     : SearchAlgorithm(file_name, seed, 0)
 {
-}
-
-std::string StochasticHillClimber::extraCounterName(unsigned counter_idx) const
-{
-    (void)counter_idx;
-    return "";
 }
 
 std::shared_ptr<Schedule> StochasticHillClimber::findSolutionSerial(double time_limit) const
@@ -25,9 +21,13 @@ std::shared_ptr<Schedule> StochasticHillClimber::findSolutionSerial(double time_
             best_sched = comp_sched;
         }
 
-        auto accept_new_prob = 1.0 / (1.0 + exp((static_cast<int>(comp_sched->execTime()) - static_cast<int>(curr_sched->execTime())) / T));
+        auto accept_new_prob = 1.0 / (1.0 + exp((static_cast<int>(comp_sched->execTime())
+                                                    - static_cast<int>(curr_sched->execTime()))
+                                                / T));
 
-        if (std::generate_canonical<double, std::numeric_limits<double>::digits>(currentRandomEngine()) < accept_new_prob)
+        if (std::generate_canonical<double, std::numeric_limits<double>::digits>(
+                currentRandomEngine())
+            < accept_new_prob)
         {
             curr_sched = comp_sched;
         }

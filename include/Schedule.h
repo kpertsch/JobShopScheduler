@@ -30,7 +30,8 @@ public:
     bool swapJobSchedulePositions(unsigned index1, unsigned index2);
     void inverseRangeMove(unsigned beginIdx, unsigned endIdx, unsigned newBeginIdx);
 
-    static std::shared_ptr<Schedule> precedencePreservingCrossover(const std::vector<bool>& randDecs, const Schedule& sol1, const Schedule& sol2);
+    static std::shared_ptr<Schedule> precedencePreservingCrossover(
+        const std::vector<bool>& randDecs, const Schedule& sol1, const Schedule& sol2);
 
     void storeAsImage(const std::string& file_name) const;
 
